@@ -1,7 +1,7 @@
 /* Compasso · página de vendas
-   - Céu em pixel que atravessa um mês com a rolagem (manhã → pôr do sol → noite e mar)
-   - Tartarugas em pixel desenhadas a partir do logo, com humor, piscadas e nado
-   - Demonstrações: janela do app, segurar para pagar, leitura de fatura, simulação do humor
+   - Hero com uma tartaruga em 3D cujo casco (a reserva) protege dos imprevistos
+   - MacBook (computador) e iPhone (celular) usando o app sozinhos
+   - Simulação do saldo projetado, leitura de fatura e trilha da Academy
    Sem dependências. */
 (() => {
   'use strict';
@@ -10,7 +10,6 @@
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const lerp = (a, b, t) => a + (b - a) * t;
-  const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
   const easeOut = t => 1 - Math.pow(1 - t, 3);
   const brl0 = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
   const money = v => (v < 0 ? '−' : '') + brl0.format(Math.abs(v)).replace(/\s/g, ' ');
@@ -45,402 +44,61 @@
   requestAnimationFrame(() => heroTitle.classList.add('is-split-in'));
 
   /* ------------------------------------------------------------------
-     Revelação na rolagem
+     Revelação na rolagem (desfoque → foco)
   ------------------------------------------------------------------ */
   const revealIO = new IntersectionObserver(entries => {
     entries.forEach(e => {
       if (!e.isIntersecting) return;
       e.target.classList.add('is-in');
-      // depois da entrada, solta o filtro para não pesar na rolagem
       setTimeout(() => e.target.classList.add('is-done'), 1400 + (parseInt(e.target.style.getPropertyValue('--rd')) || 0));
       $$('[data-split]', e.target).forEach(s => s.classList.add('is-split-in'));
       if (e.target.matches('[data-split]')) e.target.classList.add('is-split-in');
+      $$('[data-count]', e.target).forEach(el => { if (!el.closest('[data-mac]')) countUp(el); });
       revealIO.unobserve(e.target);
     });
   }, { threshold: 0.18, rootMargin: '0px 0px -6% 0px' });
-  // Irmãos que entram juntos (cartões lado a lado) chegam em cascata
   $$('.reveal').forEach(el => {
     const sibs = [...el.parentElement.children].filter(c => c.classList.contains('reveal'));
     const i = sibs.indexOf(el);
     if (sibs.length > 1 && i > 0) el.style.setProperty('--rd', Math.min(i, 4) * 110 + 'ms');
   });
-  $$('.reveal, .giant').forEach(el => revealIO.observe(el));
+  $$('.reveal').forEach(el => revealIO.observe(el));
 
   /* ------------------------------------------------------------------
      Carrossel de bancos: duplica a lista para o laço não ter emenda
   ------------------------------------------------------------------ */
-  $$('[data-marquee]').forEach(track => {
-    [...track.children].forEach(li => {
-      const c = li.cloneNode(true);
-      c.setAttribute('aria-hidden', 'true');
-      track.appendChild(c);
+  // Repete o conjunto até cobrir a tela e duplica o grupo: o laço desliza
+  // exatamente meio trilho, então nunca sobra espaço vazio.
+  const marquees = $$('[data-marquee]').map(track => ({ track, base: [...track.children] }));
+  function fillMarquees() {
+    marquees.forEach(({ track, base }) => {
+      track.textContent = '';
+      base.forEach(li => track.appendChild(li));
+      const setW = track.getBoundingClientRect().width || 1;
+      const sets = Math.max(1, Math.ceil((innerWidth + 120) / setW));
+      for (let k = 1; k < sets; k++) base.forEach(li => { const c = li.cloneNode(true); c.setAttribute('aria-hidden', 'true'); track.appendChild(c); });
+      [...track.children].forEach(li => { const c = li.cloneNode(true); c.setAttribute('aria-hidden', 'true'); track.appendChild(c); });
+      track.style.setProperty('--dur', (setW * sets / 42).toFixed(1) + 's');
     });
-  });
+  }
+  fillMarquees();
 
   /* ------------------------------------------------------------------
-     Tartaruga em pixel (a partir do logo)
-     k = corpo · w = traço do casco · e = olho
-  ------------------------------------------------------------------ */
-  const FRAME_A = [
-    '...................kkkk..',
-    '.................kkkkkkk.',
-    '..........kkkkk..kwwwwkkk',
-    '.......kkkkkkkkkkwwkwkkk.',
-    '.....kkkkwwwwwkkkwwwwkkkk',
-    '..kkkkkkwwkkkkkkkkkkkkkkk',
-    '.kkkkkwwkkkkkkkkkkkkkkkk.',
-    'kkk.kwwkkkkkkkkkkkkkk....',
-    'kk..kkkkkkkkkkkkkkkkkk...',
-    '...kkkkkkkkkkkkkkkkkkkk..',
-    '...kkkkkkkkkkkkkkk.kkkk..',
-    '....kkkkkkkkkkkkk...kkkk.',
-    '.......kkkkkkkk......kkk.',
-    '......................kk.',
-  ];
-  const FRAME_B = [
-    '...................kkkk..',
-    '.................kkkkkkk.',
-    '..........kkkkk..kwwwwkkk',
-    '.......kkkkkkkkkkwwkwkkk.',
-    'kk...kkkkwwwwwkkkwwwwkkkk',
-    'kkkkkkkkwwkkkkkkkkkkkkkkk',
-    '.kkkkkwwkkkkkkkkkkkkkkkk.',
-    '....kwwkkkkkkkkkkkkkk....',
-    '....kkkkkkkkkkkkkkkkkk...',
-    '...kkkkkkkkkkkkkkkkkkkk..',
-    '...kkkkkkkkkkkkkkkkkkk...',
-    '....kkkkkkkkkkkkkkkkk....',
-    '.......kkkkkkkk.kkkkk....',
-    '................kkk......',
-  ];
-  const markEye = g => g.map((row, y) => (y >= 2 && y <= 4) ? row.split('').map((c, x) => (c === 'w' && x >= 16 ? 'e' : c)).join('') : row);
-  const FRAMES = [markEye(FRAME_A), markEye(FRAME_B)];
-  const GW = 25, GH = 14, PAD_T = 3, PAD_B = 1, PAD_X = 1;
-  const MOOD_PERIOD = { calm: 460, alert: 230, stress: 120 };
-  const turtles = [];
-
-  const turtleIO = new IntersectionObserver(entries => {
-    entries.forEach(e => { const t = e.target._turtle; if (t) t.visible = e.isIntersecting; });
-  }, { rootMargin: '80px' });
-
-  function makeTurtle(cv) {
-    const d = cv.dataset;
-    const s = +d.scale || 3;
-    const t = {
-      cv, ctx: cv.getContext('2d'), s,
-      mood: d.mood || 'calm',
-      body: d.color || '#161616',
-      detail: d.eye || '#ffffff',
-      flip: 'flip' in d,
-      speed: +d.speed || 1,
-      frame: 0, blink: false, visible: true,
-      nextFrame: 0, blinkAt: performance.now() + 800 + Math.random() * 3200, blinkEnd: 0,
-    };
-    cv.width = (GW + PAD_X * 2) * s;
-    cv.height = (GH + PAD_T + PAD_B) * s;
-    cv.style.width = cv.width + 'px';
-    cv.style.height = cv.height + 'px';
-    cv._turtle = t;
-    drawTurtle(t);
-    turtles.push(t);
-    turtleIO.observe(cv);
-    return t;
-  }
-
-  function px(ctx, s, x, y, c) { ctx.fillStyle = c; ctx.fillRect((x + PAD_X) * s, (y + PAD_T) * s, s, s); }
-
-  function drawTurtle(t) {
-    const { ctx, cv, s } = t;
-    ctx.clearRect(0, 0, cv.width, cv.height);
-    ctx.save();
-    if (t.flip) { ctx.translate(cv.width, 0); ctx.scale(-1, 1); }
-    const g = FRAMES[t.frame];
-    for (let y = 0; y < GH; y++) {
-      const row = g[y];
-      for (let x = 0; x < GW; x++) {
-        const c = row[x];
-        if (c === '.') continue;
-        const col = c === 'k' ? t.body : c === 'w' ? t.detail : (t.blink ? t.body : t.detail);
-        px(ctx, s, x, y, col);
-      }
-    }
-    if (t.mood === 'alert') {
-      const drop = '#4aa8ff';
-      px(ctx, s, 15, -2, drop); px(ctx, s, 14, -1, drop); px(ctx, s, 15, -1, drop); px(ctx, s, 15, 0, '#9fd2ff');
-    } else if (t.mood === 'stress') {
-      const m = '#ff5a4a';
-      const wob = t.frame;
-      px(ctx, s, 19, -3 + wob, m); px(ctx, s, 19, -2 + wob, m);
-      px(ctx, s, 23, -2, m); px(ctx, s, 24, -3, m);
-      px(ctx, s, 15, -2, m); px(ctx, s, 14, -3, m);
-    }
-    ctx.restore();
-  }
-
-  function setMood(t, mood) { if (t.mood !== mood) { t.mood = mood; drawTurtle(t); } }
-
-  $$('canvas.px-turtle').forEach(makeTurtle);
-
-  // Filhotes no fim da página
-  const hatch = $('[data-hatch]');
-  if (hatch) {
-    const n = innerWidth < 760 ? 5 : 9;
-    for (let i = 0; i < n; i++) {
-      const cv = document.createElement('canvas');
-      cv.className = 'px-turtle';
-      cv.dataset.scale = String(i % 3 === 0 ? 3 : 2);
-      cv.dataset.speed = '1.8';
-      cv.dataset.color = '#0b0f22';
-      cv.dataset.eye = '#e9ecff';
-      const dur = 24 + Math.random() * 14;
-      cv.style.setProperty('--t', dur.toFixed(1) + 's');
-      cv.style.setProperty('--d', (-(i / n) * dur - Math.random() * 3).toFixed(1) + 's');
-      cv.style.bottom = (i % 3) * 7 + 'px';
-      hatch.appendChild(cv);
-      makeTurtle(cv);
-    }
-  }
-
-  function tickTurtles(now) {
-    for (const t of turtles) {
-      if (!t.visible) continue;
-      let dirty = false;
-      if (now >= t.nextFrame) {
-        t.frame ^= 1;
-        t.nextFrame = now + (MOOD_PERIOD[t.mood] || 460) / t.speed;
-        dirty = true;
-      }
-      if (!t.blink && now >= t.blinkAt) { t.blink = true; t.blinkEnd = now + 140; dirty = true; }
-      else if (t.blink && now >= t.blinkEnd) { t.blink = false; t.blinkAt = now + 2400 + Math.random() * 3600; dirty = true; }
-      if (dirty) drawTurtle(t);
-    }
-  }
-
-  /* ------------------------------------------------------------------
-     Céu em pixel
-  ------------------------------------------------------------------ */
-  const sky = $('.sky');
-  const sctx = sky.getContext('2d');
-  const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
-  // p, topo, meio, baixo, horizonte, nuvem clara, nuvem sombra, estrelas
-  const KEYS = [
-    [0.00, '#1a54b8', '#2f74dc', '#5c98ec', '#86b6f3', '#ffffff', '#cfe0fa', 0],
-    [0.30, '#1c5bc8', '#3a82e6', '#69a6f2', '#93c2f7', '#ffffff', '#d3e3fb', 0],
-    [0.50, '#2d45a2', '#6159b8', '#b37a9e', '#d99484', '#fff0ea', '#efb2ad', 0],
-    [0.62, '#262b80', '#5d439c', '#b9667e', '#e08a6c', '#ffd7c6', '#c58595', 0.12],
-    [0.74, '#10164e', '#24256a', '#47377a', '#7c5180', '#8a84b6', '#58528e', 0.6],
-    [0.86, '#060a26', '#0c1440', '#18225a', '#2a3570', '#4a5288', '#323a6c', 1],
-    [1.00, '#04071c', '#081032', '#111b4a', '#1d2a60', '#3d4680', '#2a3262', 1],
-  ].map(k => [k[0], ...k.slice(1, 7).map(hex), k[7]]);
-
-  function palette(p) {
-    let i = 0;
-    while (i < KEYS.length - 2 && p > KEYS[i + 1][0]) i++;
-    const a = KEYS[i], b = KEYS[i + 1];
-    const t = smooth(a[0], b[0], p);
-    const mix = (ca, cb) => [lerp(ca[0], cb[0], t), lerp(ca[1], cb[1], t), lerp(ca[2], cb[2], t)];
-    return { top: mix(a[1], b[1]), mid: mix(a[2], b[2]), low: mix(a[3], b[3]), hor: mix(a[4], b[4]), cl: mix(a[5], b[5]), cs: mix(a[6], b[6]), stars: lerp(a[7], b[7], t) };
-  }
-  function gradAt(pal, t) {
-    const stops = [[0, pal.top], [0.38, pal.mid], [0.78, pal.low], [1, pal.hor]];
-    let i = 0;
-    while (i < stops.length - 2 && t > stops[i + 1][0]) i++;
-    const [ta, ca] = stops[i], [tb, cb] = stops[i + 1];
-    const k = clamp((t - ta) / (tb - ta), 0, 1);
-    return [lerp(ca[0], cb[0], k), lerp(ca[1], cb[1], k), lerp(ca[2], cb[2], k)];
-  }
-  const rgb = (c, a = 1) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`;
-  const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(v => (v + 0.5) / 16);
-
-  let SW = 0, SH = 0, PX = 4, skyImg = null, lastSkyP = -1, stars = [], clouds = [];
-  let scrollP = 0, footH = 120;
-
-  function rand(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
-
-  function buildScene() {
-    const r = rand(7);
-    stars = Array.from({ length: Math.round(SW * SH / 260) }, () => ({ x: (r() * SW) | 0, y: (r() * SH * 0.72) | 0, ph: r() * 6.28, sp: 0.6 + r() * 2.2, big: r() > 0.93 }));
-    clouds = Array.from({ length: Math.max(5, Math.round(SW / 55)) }, (_, i) => makeCloud(r, i));
-  }
-  function makeCloud(r, i) {
-    const n = 3 + ((r() * 4) | 0);
-    const circles = [];
-    let x = 0;
-    const base = 6 + r() * 6;
-    for (let k = 0; k < n; k++) {
-      const rad = base * (0.55 + r() * 0.75) * (k === 0 || k === n - 1 ? 0.7 : 1);
-      circles.push([x + rad, rad]);
-      x += rad * (1.1 + r() * 0.5);
-    }
-    const width = x + 4, maxR = Math.max(...circles.map(c => c[1]));
-    const spans = [];
-    for (let y = -Math.ceil(maxR); y <= 0; y++) {
-      let x0 = Infinity, x1 = -Infinity;
-      circles.forEach(([cx, rad]) => {
-        const cy = 0;
-        const dy = y - cy;
-        if (Math.abs(dy) <= rad) { const w = Math.sqrt(rad * rad - dy * dy); x0 = Math.min(x0, cx - w); x1 = Math.max(x1, cx + w); }
-      });
-      if (x0 < x1) spans.push([y, Math.round(x0), Math.round(x1)]);
-    }
-    return { spans, width, x: r() * (SW + width) - width, y: 0.06 + r() * 0.62, depth: 0.4 + r() * 0.9, speed: 0.6 + r() * 1.8, alpha: 0.7 + r() * 0.3, i };
-  }
-
-  function resizeSky() {
-    PX = innerWidth < 760 ? 3 : 4;
-    SW = Math.ceil(innerWidth / PX);
-    SH = Math.ceil(innerHeight / PX);
-    sky.width = SW; sky.height = SH;
-    skyImg = sctx.createImageData(SW, SH);
-    lastSkyP = -1;
-    buildScene();
-    const f = $('.foot');
-    footH = f ? f.offsetHeight : 120;
-  }
-
-  function paintGradient(pal) {
-    const NB = 22;
-    const bands = Array.from({ length: NB + 1 }, (_, b) => gradAt(pal, b / NB));
-    const d = skyImg.data;
-    for (let y = 0; y < SH; y++) {
-      const tb = (y / (SH - 1)) * NB;
-      const base = Math.floor(tb), frac = tb - base;
-      const row = (y & 3) * 4;
-      for (let x = 0; x < SW; x++) {
-        const band = frac > BAYER[row + (x & 3)] ? Math.min(base + 1, NB) : base;
-        const c = bands[band];
-        const o = (y * SW + x) * 4;
-        d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255;
-      }
-    }
-  }
-
-  function disc(cx, cy, R, color) {
-    sctx.fillStyle = color;
-    for (let dy = -R; dy <= R; dy++) {
-      const w = Math.floor(Math.sqrt(R * R - dy * dy));
-      sctx.fillRect(Math.round(cx - w), Math.round(cy + dy), w * 2 + 1, 1);
-    }
-  }
-
-  function drawSky(now) {
-    const p = scrollP;
-    const pal = palette(p);
-    if (Math.abs(p - lastSkyP) > 0.0015 || lastSkyP < 0) { paintGradient(pal); lastSkyP = p; }
-    sctx.putImageData(skyImg, 0, 0);
-    const time = now / 1000;
-
-    // Estrelas
-    if (pal.stars > 0.01) {
-      for (const s of stars) {
-        const a = pal.stars * (0.35 + 0.65 * (0.5 + 0.5 * Math.sin(time * s.sp + s.ph)));
-        sctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
-        sctx.fillRect(s.x, s.y, 1, 1);
-        if (s.big && a > 0.6) { sctx.fillStyle = `rgba(255,255,255,${(a * 0.45).toFixed(3)})`; sctx.fillRect(s.x - 1, s.y, 1, 1); sctx.fillRect(s.x + 1, s.y, 1, 1); sctx.fillRect(s.x, s.y - 1, 1, 1); sctx.fillRect(s.x, s.y + 1, 1, 1); }
-      }
-    }
-
-    // Sol: desce do alto até se pôr por volta do meio da página
-    const sp = p / 0.64;
-    if (sp < 1.08) {
-      const R = Math.max(6, Math.round(SW / 55));
-      const sx = SW * lerp(0.8, 0.26, sp);
-      const sy = SH * (0.14 + 0.8 * Math.pow(clamp(sp, 0, 1.08), 1.7));
-      const warm = smooth(0.35, 1, sp);
-      const core = [255, lerp(246, 150, warm), lerp(214, 96, warm)];
-      sctx.globalAlpha = 0.12; disc(sx, sy, R * 2.6, rgb(core));
-      sctx.globalAlpha = 0.18; disc(sx, sy, R * 1.7, rgb(core));
-      sctx.globalAlpha = 1; disc(sx, sy, R, rgb(core));
-      sctx.fillStyle = 'rgba(255,255,255,.55)'; sctx.fillRect(Math.round(sx - R * 0.45), Math.round(sy - R * 0.5), Math.max(1, R * 0.3 | 0), Math.max(1, R * 0.3 | 0));
-    }
-
-    // Lua: nasce quando o céu escurece
-    const mp = smooth(0.66, 0.92, p);
-    let moonX = 0, moonY = 0;
-    if (mp > 0) {
-      const R = Math.max(5, Math.round(SW / 70));
-      moonX = SW * 0.78; moonY = SH * lerp(0.62, 0.17, mp);
-      sctx.globalAlpha = 0.1 * mp; disc(moonX, moonY, R * 3, '#dfe6ff');
-      sctx.globalAlpha = mp; disc(moonX, moonY, R, '#f3f0e2');
-      const bg = gradAt(pal, clamp(moonY / SH, 0, 1));
-      disc(moonX + R * 0.45, moonY - R * 0.3, R * 0.88, rgb(bg));
-      sctx.globalAlpha = 1;
-    }
-
-    // Nuvens
-    const scrollPx = scrollY / PX;
-    const night = smooth(0.66, 0.9, p);
-    for (const c of clouds) {
-      if (!reduced) c.x += c.speed * c.depth * 0.016;
-      if (c.x > SW + 4) c.x = -c.width - 4;
-      const cy = Math.round(SH * c.y - (scrollPx * 0.06 * c.depth) % (SH * 1.2));
-      const yy = cy < -20 ? cy + SH * 1.2 : cy;
-      const cx = Math.round(c.x);
-      const mid = Math.abs((cx + c.width / 2) / SW - 0.5) * 2; // 0 no centro, 1 nas bordas
-      const a = c.alpha * (1 - night * 0.55) * (0.18 + 0.82 * smooth(0.35, 0.95, mid));
-      sctx.fillStyle = rgb(pal.cs, a);
-      for (const [y, x0, x1] of c.spans) sctx.fillRect(cx + x0, yy + y + 2, x1 - x0, 1);
-      sctx.fillStyle = rgb(pal.cl, a);
-      for (const [y, x0, x1] of c.spans) if (y < -1) sctx.fillRect(cx + x0, yy + y, x1 - x0, 1);
-    }
-
-    // Mar e areia no fim
-    const seaT = smooth(0.82, 0.995, p);
-    if (seaT > 0) {
-      const sandH = Math.round(Math.min((footH + 64) / PX, SH * 0.34) * seaT);
-      const seaH = Math.round(SH * 0.16 * seaT);
-      const seaTop = SH - sandH - seaH;
-      for (let y = 0; y < seaH; y++) {
-        const k = y / Math.max(1, seaH);
-        sctx.fillStyle = rgb([lerp(26, 8, k), lerp(42, 16, k), lerp(96, 48, k)]);
-        sctx.fillRect(0, seaTop + y, SW, 1);
-      }
-      // brilho das ondas
-      for (let y = 1; y < seaH; y += 3) {
-        const off = (time * (6 + y)) % 18;
-        sctx.fillStyle = `rgba(160,180,255,${0.12 + 0.1 * Math.sin(y)})`;
-        for (let x = -18 + off; x < SW; x += 18) sctx.fillRect(Math.round(x + (y * 7) % 11), seaTop + y, 5, 1);
-      }
-      // reflexo da lua
-      if (mp > 0) {
-        for (let y = 1; y < seaH; y += 2) {
-          const w = Math.max(1, Math.round((3 + y * 0.6) * (0.6 + 0.4 * Math.sin(time * 2 + y))));
-          sctx.fillStyle = `rgba(243,240,226,${(0.55 - y / seaH * 0.35) * mp})`;
-          sctx.fillRect(Math.round(moonX - w / 2), seaTop + y, w, 1);
-        }
-      }
-      // areia ao luar
-      const sandTop = SH - sandH;
-      for (let y = 0; y < sandH; y++) {
-        const k = y / Math.max(1, sandH);
-        sctx.fillStyle = rgb([lerp(74, 44, k), lerp(70, 40, k), lerp(104, 66, k)]);
-        sctx.fillRect(0, sandTop + y, SW, 1);
-      }
-      sctx.fillStyle = 'rgba(220,230,255,.5)';
-      for (let x = 0; x < SW; x += 2) {
-        const h = ((Math.sin(x * 0.3 + time * 1.4) + 1) * 0.8) | 0;
-        sctx.fillRect(x, sandTop - h, 2, 1);
-      }
-      sctx.fillStyle = 'rgba(255,255,255,.08)';
-      for (let i = 0; i < SW * sandH / 40; i++) { const x = (i * 97) % SW, y = sandTop + 2 + ((i * 53) % Math.max(1, sandH - 2)); sctx.fillRect(x, y, 1, 1); }
-    }
-  }
-
-  /* ------------------------------------------------------------------
-     Rolagem: progresso do mês
+     Cabeçalho: escurece sobre fundo claro e se esconde ao descer
   ------------------------------------------------------------------ */
   const nav = $('[data-nav]');
-  const dayEl = $('[data-day]');
-  const monthBar = $('[data-month-bar]');
+  const hero = $('.hero');
+  let lastY = scrollY;
   function onScroll() {
-    const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
-    scrollP = clamp(scrollY / max, 0, 1);
-    nav.classList.toggle('is-scrolled', scrollY > 24);
-    const day = clamp(Math.round(1 + scrollP * 29), 1, 30);
-    dayEl.textContent = String(day).padStart(2, '0');
-    monthBar.style.width = (scrollP * 100).toFixed(1) + '%';
-    updateTrail();
+    const y = scrollY;
+    nav.classList.toggle('is-light', y > hero.offsetHeight - 80);
+    nav.classList.toggle('is-hidden', y > 600 && y > lastY + 4);
+    if (y < lastY - 4 || y < 600) nav.classList.remove('is-hidden');
+    lastY = y;
+    updateAcad();
+    tiltMac();
   }
+
 
   /* ------------------------------------------------------------------
      Janela do app (escala) e contadores
@@ -488,7 +146,7 @@
     if (!paid) holdState.holding = false;
     setHold(paid ? 1 : 0);
     hold.classList.toggle('is-done', paid);
-    holdLabel.textContent = paid ? 'Pago! Tartaruga feliz' : 'Segure para marcar como pago';
+    holdLabel.textContent = paid ? 'Pago! Saldo atualizado' : 'Segure para marcar como pago';
     billChip.className = 'chip ' + (paid ? 'chip--ok' : 'chip--wait');
     billChip.innerHTML = paid ? '<svg><use href="#i-check"/></svg><span>pago agora</span>' : '<svg><use href="#i-clock"/></svg><span>vence amanhã</span>';
     payLight.classList.toggle('is-paid', paid);
@@ -537,7 +195,7 @@
     const cursor = $('[data-cursor]');
     const tip = $('[data-tip]');
     const importBtn = $('.app-btn', app);
-    const turtleCv = $('.app-hero__turtle canvas', app);
+    const turtleCv = $('.app-hero__turtle', app);
     const sheetBar = $('[data-sheet-bar]');
     const sheetStatus = $('[data-sheet-status]');
     const sheetSave = $('[data-sheet-save]');
@@ -742,41 +400,6 @@
   }));
 
   /* ------------------------------------------------------------------
-     Simulação do humor da tartaruga
-  ------------------------------------------------------------------ */
-  const spend = $('[data-spend]');
-  if (spend) {
-    const income = 6200;
-    const pond = $('[data-pond-water]');
-    const pt = $('[data-pond-turtle]')._turtle;
-    const out = { spend: $('[data-spend-out]'), bal: $('[data-balance-out]'), slack: $('[data-slack-out]'), msg: $('[data-pond-msg]'), status: $('[data-pond-status]') };
-    const MSG = {
-      calm: ['Calma', 'Mês tranquilo. Que tal mandar parte da sobra para a reserva?'],
-      alert: ['Atenta', 'Apertou. Revise os gastos flexíveis antes do fim do mês.'],
-      stress: ['Aflita', 'As despesas passaram da receita. Hora de adiar o que não é essencial.'],
-    };
-    const update = () => {
-      const v = +spend.value;
-      const bal = income - v;
-      const slack = bal / income;
-      const mood = slack >= 0.15 ? 'calm' : slack >= 0 ? 'alert' : 'stress';
-      out.spend.textContent = money(v);
-      out.bal.innerHTML = '<span class="cur">' + (bal < 0 ? '−R$' : 'R$') + '</span>' + Math.abs(bal).toLocaleString('pt-BR');
-      out.slack.textContent = Math.round(slack * 100) + '%';
-      out.status.innerHTML = '<i></i>' + MSG[mood][0];
-      out.msg.textContent = MSG[mood][1];
-      pond.classList.toggle('is-alert', mood === 'alert');
-      pond.classList.toggle('is-stress', mood === 'stress');
-      setMood(pt, mood);
-      $$('[data-mood-li]').forEach(li => li.classList.toggle('is-on', li.dataset.moodLi === mood));
-      const fill = (v - spend.min) / (spend.max - spend.min) * 100;
-      spend.style.setProperty('--fill', fill + '%');
-    };
-    spend.addEventListener('input', update);
-    update();
-  }
-
-  /* ------------------------------------------------------------------
      Leitura de fatura (sequência em laço quando visível)
   ------------------------------------------------------------------ */
   const imp = $('[data-imp]');
@@ -828,93 +451,394 @@
   }
 
   /* ------------------------------------------------------------------
-     Trilha da academia
+     Hero: o casco
+     Uma tartaruga marinha gigante, vista de cima, nada atrás do título.
+     - O casco é feito de placas de vidro que voam e se encaixam ao
+       carregar: a reserva sendo montada.
+     - As nadadeiras remam, o corpo inclina, o plâncton passa (ela avança).
+     - De tempos em tempos um imprevisto bate no casco: a onda de luz
+       corre pelas placas e um aviso mostra que a reserva cobriu.
+     - O mouse inclina a cena; ao rolar, ela nada para cima e some.
   ------------------------------------------------------------------ */
-  const trail = $('[data-trail]');
-  const trailSvg = trail && $('.trail-path', trail);
-  const trailBase = trail && $('.trail-base', trail);
-  const trailDone = trail && $('.trail-done', trail);
-  const trailTurtle = trail && $('[data-trail-turtle]', trail);
-  const courses = trail ? $$('[data-course]', trail) : [];
-  let trailLen = 0, trailStops = [];
+  const hero3d = (() => {
+    const cv = $('[data-hero3d]');
+    const api = { resize() {} };
+    if (!cv) return api;
+    const ctx = cv.getContext('2d');
+    const heroEl = cv.parentElement;
+    const copy = $('.hero-copy', heroEl);
+    const toast = $('[data-shield-toast]');
+    const toastName = $('[data-st-name]'), toastVal = $('[data-st-val]');
+    const EVENTS = [['Conserto do carro', 'R$ 640'], ['Dentista', 'R$ 380'], ['Geladeira nova', 'R$ 1.290'], ['Pneu furado', 'R$ 260'], ['Remédio', 'R$ 120']];
+    const A = 1, B = 1.22, HH = 0.46, IN = 0.8; // semi-eixos do casco, altura e anel das placas da borda
+    const T0 = performance.now();
+    let W = 0, H = 0, dpr = 1, small = false, visible = true, running = false;
+    let S = 300, cx = 0, cy = 0, yaw = 0, pitch = 0.55, roll = 0;
+    let mx = 0, my = 0, tmx = 0, tmy = 0;
+    let cells = [], plankton = [];
+    let impact = null, nextImpact = 3200, evI = 0, side = 1;
 
-  function layoutTrail() {
-    if (!trail) return;
-    const cols = getComputedStyle(trail).gridTemplateColumns.split(' ').length;
-    // Caminho em serpentina: em 3 colunas a segunda linha volta da direita para a esquerda
-    courses.forEach((c, i) => {
-      c.style.gridColumn = ''; c.style.gridRow = '';
-      if (cols === 3 && i >= 3) { c.style.gridRow = '2'; c.style.gridColumn = String(3 - (i - 3)); }
-      if (cols === 2) {
-        const row = Math.floor(i / 2), pos = i % 2;
-        c.style.gridRow = String(row + 1);
-        c.style.gridColumn = String(row % 2 === 0 ? pos + 1 : 2 - pos);
+    const domeY = (x, z) => {
+      const e = (x / A) ** 2 + (z / B) ** 2;
+      return HH * Math.pow(Math.max(0, 1 - e), 0.62);
+    };
+    const rnd = (a, b) => a + Math.random() * (b - a);
+
+    function makeCell(poly, rim) {
+      // centro, leve recuo para abrir a junta entre as placas, e arestas subdivididas para curvar com o domo
+      const c = poly.reduce((s, p) => [s[0] + p[0] / poly.length, s[1] + p[1] / poly.length], [0, 0]);
+      const shrink = rim ? 0.9 : 0.9;
+      const pts = [];
+      for (let i = 0; i < poly.length; i++) {
+        const p = poly[i], q = poly[(i + 1) % poly.length];
+        for (let s = 0; s < 4; s++) {
+          let x = lerp(p[0], q[0], s / 4), z = lerp(p[1], q[1], s / 4);
+          x = c[0] + (x - c[0]) * shrink; z = c[1] + (z - c[1]) * shrink;
+          pts.push([x, domeY(x, z) + 0.012, z]);
+        }
       }
-    });
-    const tr = trail.getBoundingClientRect();
-    const pts = courses.map(c => {
-      const r = c.getBoundingClientRect();
-      return [r.left - tr.left + r.width / 2, r.top - tr.top + r.height / 2];
-    });
-    perches = courses.map(c => {
-      const r = c.getBoundingClientRect();
-      return [r.left - tr.left + r.width * 0.62, r.top - tr.top];
-    });
-    let d = `M ${pts[0][0]} ${pts[0][1]}`;
-    for (let i = 1; i < pts.length; i++) {
-      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
-      if (Math.abs(y1 - y0) < 4) d += ` C ${lerp(x0, x1, 0.35)} ${y0 - 40}, ${lerp(x0, x1, 0.65)} ${y1 + 40}, ${x1} ${y1}`;
-      else d += ` C ${x0} ${lerp(y0, y1, 0.7)}, ${x1} ${lerp(y0, y1, 0.3)}, ${x1} ${y1}`;
+      const cyy = domeY(c[0], c[1]);
+      const n = [c[0] / (A * A), cyy / (HH * HH) * 0.35 + 0.4, c[1] / (B * B)];
+      const nl = Math.hypot(...n);
+      const e = Math.hypot(c[0] / A, c[1] / B);
+      return {
+        pts, c: [c[0], cyy, c[1]], n: n.map(v => v / nl), rim,
+        delay: 0.15 + e * 0.9 + Math.random() * 0.35,
+        from: [rnd(-2.4, 2.4), rnd(1.2, 3.2), rnd(-2, 2.6)],
+        spin: rnd(-1.4, 1.4),
+      };
     }
-    trailSvg.setAttribute('viewBox', `0 0 ${tr.width} ${tr.height}`);
-    trailBase.setAttribute('d', d);
-    trailDone.setAttribute('d', d);
-    trailLen = trailDone.getTotalLength();
-    trailDone.style.strokeDasharray = `${trailLen} ${trailLen}`;
-    // fração do caminho em que cada curso é alcançado
-    trailStops = pts.map(([x, y]) => {
-      let best = 0, bestD = Infinity;
-      for (let l = 0; l <= trailLen; l += trailLen / 200) {
-        const q = trailDone.getPointAtLength(l);
-        const dd = (q.x - x) ** 2 + (q.y - y) ** 2;
-        if (dd < bestD) { bestD = dd; best = l; }
+
+    function build() {
+      cells = [];
+      const r = 0.25, dx = 1.5 * r, dz = Math.sqrt(3) * r, full = 2.598 * r * r;
+      for (let i = -4; i <= 4; i++) for (let j = -6; j <= 6; j++) {
+        const x = i * dx, z = (j + (Math.abs(i) % 2 ? 0.5 : 0)) * dz;
+        if (Math.hypot(x / (IN * A), z / (IN * B)) > 1.12) continue;
+        const poly = [];
+        for (let k = 0; k < 6; k++) {
+          const a = k * Math.PI / 3;
+          let vx = x + r * Math.cos(a), vz = z + r * Math.sin(a);
+          const e = Math.hypot(vx / (IN * A), vz / (IN * B));
+          if (e > 1) { vx /= e; vz /= e; }
+          poly.push([vx, vz]);
+        }
+        let area = 0;
+        for (let k = 0; k < 6; k++) { const p = poly[k], q = poly[(k + 1) % 6]; area += p[0] * q[1] - q[0] * p[1]; }
+        if (Math.abs(area / 2) < full * 0.28) continue;
+        cells.push(makeCell(poly, false));
       }
-      return best / trailLen;
-    });
-    updateTrail();
-  }
-  // A tartaruga pousa na borda de cima de cada curso e salta para o próximo
-  let perches = [];
-  function updateTrail() {
-    if (!trail || !trailLen) return;
-    const r = trail.getBoundingClientRect();
-    const prog = clamp((innerHeight * 0.7 - r.top) / (r.height * 0.9), 0, 1);
-    const n = courses.length;
-    const f = prog * (n - 1);
-    const i = Math.min(n - 2, Math.floor(f));
-    const t = smooth(0, 1, f - i);
-    // linha acompanha o mesmo ritmo dos saltos
-    const lineProg = lerp(trailStops[i], trailStops[i + 1], t);
-    trailDone.style.strokeDashoffset = String(trailLen * (1 - lineProg));
-    if (perches.length === n) {
-      const [x0, y0] = perches[i], [x1, y1] = perches[i + 1];
-      const x = lerp(x0, x1, t);
-      const y = lerp(y0, y1, t) - Math.sin(Math.PI * t) * 54;
-      const dir = x1 < x0 - 1 ? -1 : x1 > x0 + 1 ? 1 : (trailTurtle._dir || 1);
-      trailTurtle._dir = dir;
-      trailTurtle.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, calc(-100% + 5px)) scaleX(${dir})`;
+      const N = small ? 26 : 34;
+      for (let k = 0; k < N; k++) {
+        const a0 = (k / N) * Math.PI * 2, a1 = ((k + 1) / N) * Math.PI * 2;
+        cells.push(makeCell([
+          [IN * A * Math.cos(a0), IN * B * Math.sin(a0)], [A * Math.cos(a0), B * Math.sin(a0)],
+          [A * Math.cos(a1), B * Math.sin(a1)], [IN * A * Math.cos(a1), IN * B * Math.sin(a1)],
+        ], true));
+      }
+      plankton = Array.from({ length: small ? 70 : 150 }, () => ({ x: Math.random(), y: Math.random(), z: rnd(0.2, 1), s: rnd(0.6, 1.8) }));
     }
-    courses.forEach((c, k) => c.classList.toggle('is-reached', f >= k - 0.02));
+
+    function resize() {
+      const r = cv.getBoundingClientRect();
+      small = innerWidth < 760;
+      dpr = Math.min(devicePixelRatio || 1, small ? 2 : 1.6);
+      W = r.width; H = r.height;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      build();
+    }
+    api.resize = resize;
+
+    // mundo da tartaruga (x direita, y para cima, z para a cabeça) → tela
+    function proj(x, y, z) {
+      const cyw = Math.cos(yaw), syw = Math.sin(yaw);
+      const x1 = x * cyw + z * syw, z1 = -x * syw + z * cyw;
+      const cr = Math.cos(roll), sr = Math.sin(roll);
+      const x2 = x1 * cr - y * sr, y2 = x1 * sr + y * cr;
+      const up = z1 * Math.cos(pitch) + y2 * Math.sin(pitch);
+      const depth = y2 * Math.cos(pitch) - z1 * Math.sin(pitch);
+      const k = 7.5 / (7.5 - depth);
+      return [cx + x2 * S * k, cy - up * S * k, depth];
+    }
+    const poly2d = pts => { ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath(); };
+
+    // contorno de uma nadadeira no plano xz, girado no ombro
+    const FRONT = [[0, 0.12], [-0.3, 0.2], [-0.7, 0.16], [-1.05, 0.02], [-1.32, -0.2], [-1.12, -0.2], [-0.72, -0.14], [-0.34, -0.12], [0, -0.12]];
+    const REAR = [[0, 0.08], [-0.17, 0.06], [-0.32, -0.06], [-0.34, -0.24], [-0.19, -0.17], [0, -0.08]];
+    function limb(shape, sx, ox, oz, ang, lift, sweepY) {
+      const ca = Math.cos(ang), sa = Math.sin(ang);
+      return shape.map(([x, z]) => {
+        const rx = x * ca - z * sa, rz = x * sa + z * ca;
+        const reach = -x;
+        return proj(ox + rx * sx, sweepY + reach * lift, oz + rz);
+      });
+    }
+
+    function draw(now) {
+      const t = (now - T0) / 1000;
+      mx += (tmx - mx) * 0.05; my += (tmy - my) * 0.05;
+      const sp = clamp(scrollY / 800, 0, 1);
+      ctx.clearRect(0, 0, W, H);
+
+      /* plâncton passando: a tartaruga avança */
+      for (const p of plankton) {
+        const y = ((p.y + (reduced ? 0 : t * 0.018 * p.z)) % 1) * H;
+        const x = p.x * W + mx * 30 * p.z;
+        ctx.fillStyle = `rgba(200,215,245,${(0.06 + p.z * 0.3).toFixed(3)})`;
+        const s = p.s * p.z * 1.6;
+        ctx.fillRect(x - s / 2, y - s / 2, s, s);
+      }
+
+      /* posição e pose */
+      const copyMid = copy ? copy.offsetTop + copy.offsetHeight * 0.5 : H * 0.35;
+      S = (small ? Math.min(W * 0.4, 190) : Math.min(W * 0.19, 278)) * (1 - sp * 0.12);
+      cx = W / 2 + mx * 16;
+      cy = copyMid + (small ? 40 : 62) - sp * 220 + Math.sin(t * 0.9) * 5;
+      const stroke = t * 1.15; // ritmo da remada
+      yaw = Math.sin(t * 0.23) * 0.1 + mx * 0.28;
+      pitch = 0.4 + my * 0.1;
+      roll = Math.sin(stroke) * 0.035;
+      const fade = 1 - sp * 0.6;
+      const built = reduced ? 1 : clamp((t - 1.3) / 1.2, 0, 1); // cabeça e nadadeiras aparecem depois do casco
+
+      /* sombra no fundo */
+      const sh = proj(0, -0.35, -0.1);
+      const g0 = ctx.createRadialGradient(sh[0], sh[1] + S * 0.25, 0, sh[0], sh[1] + S * 0.25, S * 1.6);
+      g0.addColorStop(0, `rgba(91,128,192,${(0.18 * fade).toFixed(3)})`); g0.addColorStop(1, 'rgba(91,128,192,0)');
+      ctx.fillStyle = g0; ctx.fillRect(0, 0, W, H);
+
+      const limbFill = `rgba(180,205,245,${(0.06 * built * fade).toFixed(3)})`;
+      const limbLine = `rgba(225,235,255,${(0.3 * built * fade).toFixed(3)})`;
+      const drawLimb = pts => { poly2d(pts); ctx.fillStyle = limbFill; ctx.fill(); ctx.strokeStyle = limbLine; ctx.lineWidth = 1.1; ctx.stroke(); };
+
+      if (built > 0) {
+        /* nadadeiras traseiras e cauda */
+        const rs = Math.sin(stroke + 1.2) * 0.25;
+        drawLimb(limb(REAR, 1, -0.56, -0.92, 0.5 + rs, 0.04, 0.02));
+        drawLimb(limb(REAR, -1, 0.56, -0.92, 0.5 + rs, 0.04, 0.02));
+        drawLimb([proj(-0.09, 0.03, -B + 0.02), proj(0, 0.02, -B - 0.24), proj(0.09, 0.03, -B + 0.02)]);
+        /* nadadeiras dianteiras: remada larga, com a ponta subindo e descendo */
+        const fs = Math.sin(stroke) * 0.55, fl = Math.cos(stroke) * 0.22;
+        drawLimb(limb(FRONT, 1, -0.7, 0.6, -0.05 + fs, fl, 0.03));
+        drawLimb(limb(FRONT, -1, 0.7, 0.6, -0.05 + fs, fl, 0.03));
+        /* cabeça */
+        const head = [];
+        for (let i = 0; i < 24; i++) {
+          const a = (i / 24) * Math.PI * 2;
+          const hx = Math.cos(a) * 0.23, hz = B + 0.2 + Math.sin(a) * 0.3;
+          head.push(proj(hx, 0.1 + 0.06 * Math.max(0, Math.sin(a)), hz));
+        }
+        drawLimb(head);
+        [-1, 1].forEach(s => {
+          const e = proj(s * 0.13, 0.17, B + 0.33);
+          ctx.fillStyle = `rgba(255,255,255,${(0.85 * built * fade).toFixed(3)})`;
+          ctx.beginPath(); ctx.arc(e[0], e[1], Math.max(1.4, S * 0.009), 0, 6.29); ctx.fill();
+        });
+      }
+
+      /* imprevistos: vêm de lado, batem no casco e voltam */
+      let ripple = null;
+      if (!reduced && t * 1000 > nextImpact && !impact && built >= 1) {
+        side = -side;
+        const a = side > 0 ? -0.12 : Math.PI + 0.12;
+        impact = { t0: t, side, lx: A * 0.86 * Math.cos(a), lz: B * 0.86 * Math.sin(a), ev: EVENTS[evI++ % EVENTS.length], shown: false };
+      }
+      if (impact) {
+        const k = t - impact.t0;
+        const hit = proj(impact.lx, domeY(impact.lx, impact.lz) + 0.05, impact.lz);
+        const IN_T = 1.0;
+        let px, py, al;
+        const sx0 = hit[0] + impact.side * Math.min(W * 0.5, 700), sy0 = hit[1] - 60;
+        if (k < IN_T) {
+          const e = k / IN_T, ee = e * e;
+          px = lerp(sx0, hit[0], ee); py = lerp(sy0, hit[1], ee); al = Math.min(1, e * 3);
+        } else {
+          const e = (k - IN_T) / 1.1;
+          px = hit[0] + impact.side * e * 300; py = hit[1] - Math.sin(e * Math.PI * 0.5) * 90; al = Math.max(0, 1 - e);
+          ripple = { lx: impact.lx, lz: impact.lz, k: k - IN_T };
+          if (!impact.shown && toast) {
+            impact.shown = true;
+            toastName.textContent = impact.ev[0]; toastVal.textContent = impact.ev[1];
+            const tx = clamp(hit[0] + impact.side * Math.min(250, W * 0.17), 140, W - 140);
+            toast.style.left = tx + 'px'; toast.style.top = (hit[1] + 40) + 'px';
+            toast.classList.add('is-on');
+            setTimeout(() => toast.classList.remove('is-on'), 2600);
+          }
+        }
+        if (al > 0) {
+          // cometa com rastro
+          const dxv = k < IN_T ? hit[0] - sx0 : impact.side, dyv = k < IN_T ? hit[1] - sy0 : -1;
+          const dl = Math.hypot(dxv, dyv) || 1;
+          for (let j = 10; j >= 0; j--) {
+            const qx = px - (dxv / dl) * j * 6, qy = py - (dyv / dl) * j * 6;
+            const a2 = al * (1 - j / 11);
+            ctx.fillStyle = j === 0 ? `rgba(255,255,255,${a2.toFixed(3)})` : `rgba(180,205,245,${(a2 * 0.5).toFixed(3)})`;
+            const s = j === 0 ? 4 : 2;
+            ctx.fillRect(qx - s / 2, qy - s / 2, s, s);
+          }
+          const g = ctx.createRadialGradient(px, py, 0, px, py, 18);
+          g.addColorStop(0, `rgba(180,205,245,${(0.5 * al).toFixed(3)})`); g.addColorStop(1, 'rgba(180,205,245,0)');
+          ctx.fillStyle = g; ctx.fillRect(px - 18, py - 18, 36, 36);
+        }
+        if (k > IN_T + 2) { impact = null; nextImpact = t * 1000 + 2600; }
+      }
+
+      /* o casco: placas em ordem de profundidade */
+      const sweep = ((t * 0.32) % 3.4) - 1.7;
+      const L = [-0.35, 0.85, 0.4]; // luz vinda de cima, à esquerda e à frente
+      const list = cells.map(c => {
+        const q = reduced ? 1 : easeOut(clamp((t - c.delay) / 1.25, 0, 1));
+        const off = 1 - q;
+        const ang = c.spin * off;
+        const ca = Math.cos(ang), sa = Math.sin(ang);
+        const pts = c.pts.map(([x, y, z]) => {
+          const lx = x - c.c[0], lz = z - c.c[2];
+          const rx = lx * ca - lz * sa, rz = lx * sa + lz * ca;
+          return proj(c.c[0] + rx + c.from[0] * off, y + c.from[1] * off, c.c[2] + rz + c.from[2] * off);
+        });
+        const d = proj(c.c[0], c.c[1], c.c[2])[2];
+        return { c, q, pts, d };
+      }).sort((a, b) => a.d - b.d);
+
+      for (const { c, q, pts } of list) {
+        if (q <= 0) continue;
+        const lit = clamp(c.n[0] * L[0] + c.n[1] * L[1] + c.n[2] * L[2], 0, 1);
+        let glow = Math.exp(-((c.c[2] - sweep) ** 2) / 0.04) * 0.5;
+        if (ripple) {
+          const dist = Math.hypot(c.c[0] - ripple.lx, c.c[2] - ripple.lz);
+          glow += Math.exp(-((dist - ripple.k * 1.7) ** 2) / 0.03) * Math.max(0, 1 - ripple.k / 1.5) * 1.2;
+        }
+        const a = q * fade;
+        poly2d(pts);
+        const gx = ctx.createLinearGradient(pts[0][0], pts[0][1], pts[pts.length >> 1][0], pts[pts.length >> 1][1]);
+        gx.addColorStop(0, `rgba(190,212,250,${((0.035 + lit * 0.1 + glow * 0.2) * a).toFixed(3)})`);
+        gx.addColorStop(1, `rgba(120,150,210,${((0.01 + lit * 0.04 + glow * 0.1) * a).toFixed(3)})`);
+        ctx.fillStyle = gx; ctx.fill();
+        ctx.strokeStyle = `rgba(235,242,255,${(((c.rim ? 0.1 : 0.16) + lit * 0.3 + glow * 0.6) * a).toFixed(3)})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+
+    function loop(now) {
+      if (!visible) { running = false; return; }
+      draw(now);
+      requestAnimationFrame(loop);
+    }
+    resize();
+    if (reduced) { draw(performance.now()); return api; }
+    new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      if (visible && !running) { running = true; requestAnimationFrame(loop); }
+    }).observe(cv);
+    heroEl.addEventListener('pointermove', e => {
+      const r = heroEl.getBoundingClientRect();
+      tmx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+      tmy = ((e.clientY - r.top) / Math.min(r.height, innerHeight) - 0.5) * 2;
+      heroEl.style.setProperty('--gx', (e.clientX - r.left) + 'px');
+      heroEl.style.setProperty('--gy', (e.clientY - r.top) + 'px');
+    });
+    addEventListener('load', resize);
+    return api;
+  })();
+
+  /* MacBook: chega inclinado e se endireita conforme a rolagem */
+  function tiltMac() {
+    if (!mac || reduced || !mac.offsetParent) return;
+    const r = mac.getBoundingClientRect();
+    const p = clamp((innerHeight - r.top) / (innerHeight * 0.85), 0, 1);
+    const e = easeOut(p);
+    mac.style.setProperty('--tilt', ((1 - e) * 24).toFixed(2) + 'deg');
+    mac.style.setProperty('--sc', (0.9 + e * 0.1).toFixed(3));
   }
 
   /* ------------------------------------------------------------------
-     Preços: mensal × anual
+     Saldo projetado: medidor, gráfico do mês e mensagens
   ------------------------------------------------------------------ */
+  const spend = $('[data-spend]');
+  if (spend) {
+    const income = 6200;
+    const sim = $('[data-sim]');
+    const gauge = $('[data-gauge]');
+    const line = $('[data-sc-line]'), area = $('[data-sc-area]'), zero = $('[data-sc-zero]'), dot = $('[data-sc-dot]');
+    const out = { spend: $('[data-spend-out]'), bal: $('[data-balance-out]'), slack: $('[data-slack-out]'), save: $('[data-save-out]'), msg: $('[data-sim-msg]'), pill: $('[data-mood-pill]') };
+    const MSG = {
+      calm: ['Calma', 'Mês tranquilo. Que tal mandar parte da sobra para a reserva?'],
+      alert: ['Atenção', 'Apertou. Revise os gastos flexíveis antes do fim do mês.'],
+      stress: ['Alerta', 'As despesas passaram da receita. Hora de adiar o que não é essencial.'],
+    };
+    // Como as despesas saem ao longo do mês: contas fixas em dias marcados e o resto espalhado
+    const BILLS = [[5, 0.31], [10, 0.21], [15, 0.12], [20, 0.1], [25, 0.08]];
+    const SPREAD = 1 - BILLS.reduce((a, b) => a + b[1], 0);
+    const W = 300, H = 100, TOP = 8, BOT = 92, MIN = -1800, MAX = income;
+    const yOf = v => lerp(BOT, TOP, (v - MIN) / (MAX - MIN));
+    const update = () => {
+      const v = +spend.value;
+      const bal = income - v;
+      const slack = bal / income;
+      const mood = slack >= 0.15 ? 'calm' : slack >= 0 ? 'alert' : 'stress';
+      out.spend.textContent = money(v);
+      out.bal.textContent = money(bal);
+      out.slack.textContent = Math.round(slack * 100) + '%';
+      out.save.textContent = money(Math.max(0, Math.round(bal * 0.4 / 10) * 10));
+      out.pill.innerHTML = '<i></i>' + MSG[mood][0];
+      out.msg.textContent = MSG[mood][1];
+      sim.classList.toggle('is-alert', mood === 'alert');
+      sim.classList.toggle('is-stress', mood === 'stress');
+      $$('[data-mood-li]').forEach(li => li.classList.toggle('is-on', li.dataset.moodLi === mood));
+      gauge.style.setProperty('--g', (clamp((slack + 0.2) / 0.6, 0.02, 1) * 100).toFixed(1));
+      // saldo dia a dia
+      let b = income, d = '';
+      const pts = [];
+      for (let day = 1; day <= 30; day++) {
+        b -= v * SPREAD / 30;
+        BILLS.forEach(([bd, share]) => { if (bd === day) b -= v * share; });
+        pts.push([(day - 1) / 29 * W, yOf(b)]);
+      }
+      d = 'M ' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L ');
+      line.setAttribute('d', d);
+      area.setAttribute('d', d + ` L ${W} ${BOT} L 0 ${BOT} Z`);
+      const zy = yOf(0).toFixed(1);
+      zero.setAttribute('y1', zy); zero.setAttribute('y2', zy);
+      const last = pts[pts.length - 1];
+      dot.setAttribute('cx', last[0]); dot.setAttribute('cy', last[1].toFixed(1));
+      const fill = (v - spend.min) / (spend.max - spend.min) * 100;
+      spend.style.setProperty('--fill', fill + '%');
+    };
+    spend.addEventListener('input', update);
+    update();
+  }
+
+  /* ------------------------------------------------------------------
+     Academy: linha de progresso acompanha a rolagem
+  ------------------------------------------------------------------ */
+  const acad = $('[data-acad]');
+  const acadFill = $('[data-acad-fill]');
+  function updateAcad() {
+    if (!acad) return;
+    const r = acad.getBoundingClientRect();
+    const p = clamp((innerHeight * 0.85 - r.top) / (r.height + innerHeight * 0.2), 0, 1);
+    acadFill.style.setProperty('--p', p.toFixed(3));
+  }
+
+  /* ------------------------------------------------------------------
+     Preços: mensal × anual, com a pílula de vidro deslizando
+  ------------------------------------------------------------------ */
+  const period = $('.period');
+  const thumb = $('.period-thumb');
   const priceEl = $('[data-price]');
   const priceOld = $('[data-price-old]');
   const priceNote = $('[data-price-note]');
+  const placeThumb = () => {
+    const on = $('[data-period].is-on', period);
+    if (!on) return;
+    thumb.style.setProperty('--tx', on.offsetLeft + 'px');
+    thumb.style.setProperty('--tw', on.offsetWidth + 'px');
+  };
   $$('[data-period]').forEach(btn => btn.addEventListener('click', () => {
     $$('[data-period]').forEach(b => b.classList.toggle('is-on', b === btn));
+    placeThumb();
     const yearly = btn.dataset.period === 'y';
     priceEl.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.2,.8,.2,1)' });
     priceEl.textContent = yearly ? 'R$ 16,58' : 'R$ 19,90';
@@ -925,26 +849,38 @@
   /* ------------------------------------------------------------------
      Laço principal
   ------------------------------------------------------------------ */
-  let last = performance.now(), skyAcc = 0;
-  function loop(now) {
+  let last = performance.now();
+  function frame(now) {
     const dt = Math.min(64, now - last);
     last = now;
-    tickTurtles(now);
     tickHold(dt);
     tickInvoice(dt);
-    skyAcc += dt;
-    if (skyAcc >= 33) { drawSky(now); skyAcc = 0; }
-    requestAnimationFrame(loop);
+    requestAnimationFrame(frame);
   }
 
-  function onResize() { resizeSky(); fitWin(); layoutTrail(); onScroll(); drawSky(performance.now()); }
+  /* ------------------------------------------------------------------
+     Alto mar: o 3D do fim da página só carrega quando a pessoa chega perto
+  ------------------------------------------------------------------ */
+  const oceanEl = $('[data-ocean]');
+  if (oceanEl && 'IntersectionObserver' in window) {
+    const oceanIO = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      oceanIO.disconnect();
+      const load = src => new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = src; s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+      load('vendor/three.min.js').then(() => load('ocean.js')).catch(() => {});
+    }, { rootMargin: '900px 0px' });
+    oceanIO.observe(oceanEl);
+  }
+
+  function onResize() { fitWin(); placeThumb(); fillMarquees(); hero3d.resize(); onScroll(); }
   addEventListener('resize', () => { clearTimeout(onResize._t); onResize._t = setTimeout(onResize, 120); });
-  addEventListener('scroll', () => { onScroll(); if (reduced) drawSky(performance.now()); }, { passive: true });
-  resizeSky(); fitWin(); onScroll();
-  // A trilha depende das fontes carregadas para medir os cartões
-  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { fitWin(); layoutTrail(); });
-  addEventListener('load', layoutTrail);
-  drawSky(performance.now());
-  if (reduced) { turtles.forEach(drawTurtle); }
-  else requestAnimationFrame(loop);
+  addEventListener('scroll', onScroll, { passive: true });
+  fitWin(); placeThumb(); onScroll();
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { fitWin(); placeThumb(); fillMarquees(); });
+  if (!reduced) requestAnimationFrame(frame);
+  else tickInvoice(4000);
 })();

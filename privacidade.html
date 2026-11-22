@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Política de privacidade · Compasso</title>
+  <meta name="description" content="O que o Compasso guarda, o que pode sair do seu computador e seus direitos pela LGPD." />
+  <link rel="icon" type="image/png" href="assets/compasso-logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg:#f5f5f3; --ink:#111; --muted:#4a4a4a; --line:#dcdcd8; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#0a0a0b; --ink:#f2f2f0; --muted:#b4b4b0; --line:#2a2a2c; } }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.75 Geist, system-ui, sans-serif; }
+    main { max-width:760px; margin:0 auto; padding:56px 16px 80px; }
+    a { color:inherit; }
+    .back { font-size:14px; color:var(--muted); text-decoration:none; }
+    h1 { font-size:clamp(32px,6vw,48px); letter-spacing:-.03em; line-height:1.1; margin:24px 0 8px; }
+    h3 { font-size:19px; margin:36px 0 6px; letter-spacing:-.01em; }
+    p, li { color:var(--muted); }
+    strong { color:var(--ink); }
+    .meta { font-size:14px; padding-bottom:20px; border-bottom:1px solid var(--line); }
+  </style>
+</head>
+<body>
+  <main>
+    <!-- Gerado a partir de public/privacy-center.mjs: altere lá e mantenha as duas versões iguais. -->
+    <a class="back" href="index.html">← Voltar ao Compasso</a>
+    <h1>Política de privacidade</h1>
+
+<p class="meta">Versão de 21/11/2026</p>
+<h3>1. Resumo</h3>
+<p>O Compasso guarda suas finanças no seu computador, criptografadas. Não temos conta sua, não vemos seus registros e não vendemos dados. O único dado que pode sair do computador é o texto de uma fatura, sem seus dados pessoais, e só se você ativar a leitura com IA.</p>
+<h3>2. Dados guardados no seu computador</h3>
+<p>Orçamentos, despesas, receitas, objetivos, faturas importadas e preferências ficam na pasta de dados do Compasso no seu computador. O arquivo de dados e os backups automáticos são criptografados com AES-256-GCM. A chave é única por instalação e fica protegida pela proteção de dados do Windows (DPAPI), ligada à sua conta de usuário. Não temos acesso a esses arquivos.</p>
+<p>O arquivo de backup que você exporta (Ajustes → Backup completo) e a planilha CSV <strong>não</strong> são criptografados, para você conseguir abri-los em outro computador. Guarde esses arquivos em um local seguro.</p>
+<h3>3. Leitura de faturas com IA (opcional)</h3>
+<p>Se você permitir, o Compasso usa IA para ler os lançamentos das faturas em PDF com mais precisão. Antes de sair do seu computador, o texto da fatura perde CPF, nome do titular, endereço, CEP, e-mail, telefone, números completos de cartão e de conta e códigos de pagamento. O texto restante segue por conexão criptografada (HTTPS, TLS 1.2 ou superior) para o serviço de leitura do Compasso (servidor na Hostinger, protegido pela Cloudflare) e é processado pela DeepSeek, empresa com servidores na China. Isso é uma transferência internacional de dados. O arquivo PDF não é enviado, e o Compasso não grava o texto nem o registra em log. Para limitar o uso diário, o serviço recebe um código aleatório desta instalação, sem ligação com seu nome ou e-mail. Sem a sua permissão, a leitura acontece só no seu computador.</p>
+<p>A DeepSeek trata o texto conforme os termos de uso da API dela. Como o texto chega sem seus dados de identificação, ele não aponta para você.</p>
+<p><strong>Base legal:</strong> seu consentimento (LGPD, art. 7º, I), inclusive o consentimento específico e em destaque para a transferência internacional (art. 33, VIII). Você pode retirar o consentimento a qualquer momento em Ajustes → Privacidade e segurança, e o código aleatório da instalação é apagado.</p>
+<h3>4. Atualizações</h3>
+<p>O aplicativo para Windows consulta o GitHub, por HTTPS, para saber se há uma versão nova. Nessa consulta, o GitHub recebe o endereço IP do seu computador, como em qualquer acesso a um site.</p>
+<h3>5. Somente leitura</h3>
+<p>O Compasso nunca movimenta dinheiro, não faz pagamentos ou transferências e não pede senha de banco. Ele só organiza as informações que você digita ou importa.</p>
+<h3>6. Segurança</h3>
+<ul>
+<li>Dados no computador: criptografia AES-256-GCM, com verificação de integridade.</li>
+<li>Chave: protegida pela DPAPI do Windows, nunca gravada em texto puro.</li>
+<li>Conexões para fora do computador: apenas HTTPS com TLS 1.2 ou superior.</li>
+<li>Anonimização dupla do texto das faturas: no seu computador e de novo no serviço de leitura.</li>
+</ul>
+<h3>7. Por quanto tempo guardamos</h3>
+<p>Seus registros ficam no seu computador até você apagá-los. O texto enviado para a leitura com IA é descartado assim que a resposta volta. Não guardamos histórico de uso associado a você.</p>
+<h3>8. Seus direitos</h3>
+<p>Pela LGPD (art. 18), você pode confirmar se tratamos seus dados, acessar, corrigir, apagar, levar seus dados para outro serviço e retirar o consentimento. No Compasso, quase tudo está nas suas mãos: você vê, corrige, exporta e apaga os dados no próprio aplicativo. Para qualquer pedido ou dúvida, escreva para <strong>privacidade@ggds.tech</strong>. Você também pode procurar a Autoridade Nacional de Proteção de Dados (ANPD).</p>
+<h3>9. Mudanças nesta política</h3>
+<p>Se mudarmos a forma de tratar seus dados, atualizamos esta página e pedimos sua permissão de novo antes de usar a leitura com IA.</p>
+  </main>
+</body>
+</html>

@@ -5,9 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Compasso · Seu dinheiro com rumo</title>
   <meta name="description" content="O Compasso organiza suas contas, lê a fatura do cartão por você e ensina, passo a passo, a montar um mês que fecha no azul." />
-  <meta name="theme-color" content="#1f5fc8" />
+  <meta name="theme-color" content="#0a0a0b" />
   <link rel="icon" type="image/png" href="assets/compasso-logo.png" />
-  <link rel="preload" href="fonts/CompassoCasco-Bold.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <script>document.documentElement.classList.add("js")</script>
 </head>
@@ -48,52 +50,51 @@
     </defs>
   </svg>
 
-  <canvas class="sky" aria-hidden="true"></canvas>
-
   <!-- ===================== CABEÇALHO ===================== -->
   <header class="nav" data-nav>
-    <div class="nav-bar">
+    <div class="nav-bar lg lg--dark">
       <a class="logo" href="#topo" aria-label="Compasso, início">
-        <span class="logo-tile"><img src="assets/compasso-logo.png" alt="" width="26" height="16" /></span>
+        <span class="logo-tile"><img src="assets/compasso-logo.png" alt="" width="24" height="15" /></span>
         <span class="logo-word">Compasso</span>
       </a>
       <nav class="nav-links" aria-label="Seções">
         <a href="#como-funciona">Como funciona</a>
-        <a href="#tartaruga">A tartaruga</a>
+        <a href="#termometro">Saldo projetado</a>
         <a href="#academia">Academia</a>
         <a href="#precos">Preços</a>
         <a href="#duvidas">Dúvidas</a>
       </nav>
-      <div class="nav-end">
-        <div class="month-pill" aria-hidden="true" title="A página atravessa um mês inteiro">
-          <span class="month-pill__label">Dia</span>
-          <b class="month-pill__day" data-day>01</b>
-          <span class="month-pill__track"><i data-month-bar></i><em style="--at:48%"></em></span>
-        </div>
-        <a class="nav-cta" href="#precos">
-          <span class="nav-peek"><canvas class="px-turtle" data-scale="2" data-peek></canvas></span>
-          <span>Começar grátis</span>
-        </a>
-      </div>
+      <a class="nav-cta" href="#precos">Começar grátis<svg><use href="#i-arrow"/></svg></a>
     </div>
   </header>
 
   <main id="topo">
     <!-- ===================== HERO ===================== -->
     <section class="hero">
+      <div class="aurora" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <canvas class="hero-3d" data-hero3d aria-hidden="true"></canvas>
+      <div class="hero-glow" aria-hidden="true"></div>
+
       <div class="hero-copy">
-        <p class="kicker kicker--glass"><span class="kicker-dot"></span>Para quem quer aprender a cuidar do próprio dinheiro</p>
+        <p class="badge lg lg--dark"><span class="badge-dot"></span>Organização financeira que também ensina</p>
         <h1 class="hero-title" data-split>Seu dinheiro com rumo, <em>do dia 1 ao dia 30.</em></h1>
         <p class="hero-lead">O Compasso organiza suas contas, lê a fatura do cartão por você e ensina, passo a passo, a montar um mês que fecha no azul. Sem planilha, sem jargão.</p>
         <div class="hero-cta">
           <a href="#precos" class="btn btn--primary">Quero organizar meu dinheiro<svg><use href="#i-arrow"/></svg></a>
-          <a href="#como-funciona" class="btn btn--ghost">Ver funcionando</a>
+          <a href="#como-funciona" class="btn btn--glass lg lg--dark">Ver como funciona</a>
         </div>
-        <p class="hero-note">
-          <span>Pronto em 5 minutos</span><span class="dot">·</span>
-          <span class="hero-platforms"><svg><use href="#i-windows"/></svg>Windows</span><span class="dot">·</span>
-          <span><svg><use href="#i-lock"/></svg>Seus dados ficam no seu computador</span>
-        </p>
+        <ul class="hero-trust">
+          <li><svg><use href="#i-lock"/></svg>Seus dados ficam no seu computador</li>
+          <li><svg><use href="#i-shield"/></svg>Nenhuma senha de banco</li>
+          <li><svg><use href="#i-clock"/></svg>Pronto em 5 minutos</li>
+        </ul>
+      </div>
+
+      <!-- Imprevisto batendo no casco: aviso que aparece no ponto do impacto -->
+      <div class="shield-toast lg lg--dark" data-shield-toast aria-hidden="true">
+        <span class="st-ico"><svg><use href="#i-shield"/></svg></span>
+        <span class="st-txt"><b data-st-name>Conserto do carro</b><small>coberto pela reserva</small></span>
+        <em data-st-val>R$ 640</em>
       </div>
 
       <div class="stage" id="demo">
@@ -132,7 +133,7 @@
                     <p>Receita menos todas as despesas e faturas, pagas ou não. É o seu rumo até o dia 30.</p>
                   </div>
                   <div class="app-hero__turtle">
-                    <canvas class="px-turtle" data-scale="6" data-mood="calm" data-color="#ececec" data-eye="#161616"></canvas>
+                    <img src="assets/compasso-logo.png" alt="" />
                     <span class="app-mood"><i></i>Calma · folga de 29%</span>
                   </div>
                 </div>
@@ -185,8 +186,7 @@
 
         <!-- Cartões flutuantes -->
         <div class="pop pop--bill" data-pop>
-          <canvas class="px-turtle perch" data-scale="3" data-perch></canvas>
-          <div class="card card--mini">
+          <div class="card card--mini lg">
             <div class="mini-head"><svg><use href="#i-bell"/></svg>Lembrete<span class="chip chip--wait" data-bill-chip><svg><use href="#i-clock"/></svg><span>vence amanhã</span></span></div>
             <p class="mini-title">Conta de luz · R$ 142,30</p>
             <p class="mini-detail">Vencimento 21/11 · Moradia · recorrente</p>
@@ -198,7 +198,7 @@
         </div>
 
         <div class="pop pop--invoice" data-pop>
-          <div class="card card--mini">
+          <div class="card card--mini lg">
             <div class="mini-head"><svg><use href="#i-file"/></svg>Fatura importada<em>agora</em></div>
             <div class="inv-line"><span class="inv-file"><svg><use href="#i-file"/></svg></span><span><b>fatura-novembro.pdf</b><small data-inv-status>Lendo lançamentos…</small></span></div>
             <div class="inv-bar"><i data-inv-bar></i></div>
@@ -208,15 +208,14 @@
 
         <div class="pop pop--push" data-pop>
           <div class="pushes" data-pushes>
-            <div class="push"><span class="push-ico"><img src="assets/compasso-logo.png" alt="" /></span><div><div class="push-top"><b>Você gastou 12% menos</b><span>agora</span></div><p>Que outubro, no mesmo dia do mês. A tartaruga agradece.</p></div></div>
+            <div class="push"><span class="push-ico"><img src="assets/compasso-logo.png" alt="" /></span><div><div class="push-top"><b>Você gastou 12% menos</b><span>agora</span></div><p>Que outubro, no mesmo dia do mês. Bom ritmo!</p></div></div>
             <div class="push"><span class="push-ico"><img src="assets/compasso-logo.png" alt="" /></span><div><div class="push-top"><b>Internet vence sexta</b><span>9:00</span></div><p>R$ 99,90 · já está no seu saldo projetado.</p></div></div>
             <div class="push"><span class="push-ico"><img src="assets/compasso-logo.png" alt="" /></span><div><div class="push-top"><b>Reserva: 2,4 de 6 meses</b><span>ontem</span></div><p>Mais R$ 300 e você passa de 2,5 meses guardados.</p></div></div>
           </div>
         </div>
 
         <div class="pop pop--save" data-pop>
-          <canvas class="px-turtle perch perch--right" data-scale="3" data-perch data-flip></canvas>
-          <div class="card card--mini">
+          <div class="card card--mini lg">
             <div class="mini-head"><svg><use href="#i-trend"/></svg>Vs. outubro<em>mesmo dia</em></div>
             <div class="mini-kpi"><b><span class="cur">− R$</span>412</b><span>a menos em gastos flexíveis</span></div>
             <div class="mini-bars"><i style="--h:72%"></i><i style="--h:64%"></i><i style="--h:80%"></i><i style="--h:58%"></i><i style="--h:50%"></i><i style="--h:44%"></i><i style="--h:38%"></i></div>
@@ -249,7 +248,7 @@
                 <div class="ps-body">
                   <header class="ps-head"><div><small>Boa tarde,</small><h5>Marina</h5></div><span class="ps-avatar">MS</span></header>
                   <div class="ps-turtle">
-                    <canvas class="px-turtle" data-scale="2" data-mood="calm" data-color="#ececec" data-eye="#161616"></canvas>
+                    <img src="assets/compasso-logo.png" alt="" />
                     <div><b>Calma</b><span>folga de 29% no mês</span></div>
                     <em>NOV</em>
                   </div>
@@ -275,22 +274,40 @@
           <span class="phone-floor"></span>
         </div>
       </div>
-    </section>
 
-    <!-- ===================== BANCOS ===================== -->
-    <section class="banks reveal">
-      <p class="banks-lead">Importe a fatura do cartão que você já usa, em PDF ou CSV.</p>
-      <div class="banks-marquee">
-        <ul class="banks-track" data-marquee>
-          <li><span class="bank-ico" style="--bg:#820ad1"><img src="assets/banks/nubank.svg" alt="" /></span><b>Nubank</b></li>
-          <li><span class="bank-ico bank-ico--full"><img src="assets/banks/itau.png" alt="" /></span><b>Itaú</b></li>
-          <li><span class="bank-ico" style="--bg:#cc092f"><img src="assets/banks/bradesco.png" alt="" /></span><b>Bradesco</b></li>
-          <li><span class="bank-ico bank-ico--full"><img src="assets/banks/bb.png" alt="" /></span><b>Banco do Brasil</b></li>
-          <li><span class="bank-ico bank-ico--full"><img src="assets/banks/santander.png" alt="" /></span><b>Santander</b></li>
-          <li><span class="bank-ico bank-ico--full"><img src="assets/banks/caixa.png" alt="" /></span><b>Caixa</b></li>
-          <li><span class="bank-ico bank-ico--full"><img src="assets/banks/inter.png" alt="" /></span><b>Inter</b></li>
-          <li><span class="bank-ico bank-ico--other"><svg><use href="#i-card"/></svg></span><b>Outros bancos</b></li>
-        </ul>
+      <!-- Bancos -->
+      <div class="banks reveal">
+        <p class="banks-lead">Importe a fatura do cartão que você já usa, em PDF ou CSV</p>
+        <div class="banks-marquee">
+          <ul class="banks-track" data-marquee>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/nubank.png" alt="" width="38" height="38" loading="lazy" /></span><b>Nubank</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/itau.png" alt="" width="38" height="38" loading="lazy" /></span><b>Itaú</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/mercadopago.png" alt="" width="38" height="38" loading="lazy" /></span><b>Mercado Pago</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/bradesco.png" alt="" width="38" height="38" loading="lazy" /></span><b>Bradesco</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/inter.png" alt="" width="38" height="38" loading="lazy" /></span><b>Inter</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/bb.png" alt="" width="38" height="38" loading="lazy" /></span><b>Banco do Brasil</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/c6.png" alt="" width="38" height="38" loading="lazy" /></span><b>C6 Bank</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/caixa.png" alt="" width="38" height="38" loading="lazy" /></span><b>Caixa</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/picpay.png" alt="" width="38" height="38" loading="lazy" /></span><b>PicPay</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/santander.png" alt="" width="38" height="38" loading="lazy" /></span><b>Santander</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/pagbank.png" alt="" width="38" height="38" loading="lazy" /></span><b>PagBank</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/btg.png" alt="" width="38" height="38" loading="lazy" /></span><b>BTG Pactual</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/neon.png" alt="" width="38" height="38" loading="lazy" /></span><b>Neon</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/sicredi.png" alt="" width="38" height="38" loading="lazy" /></span><b>Sicredi</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/xp.png" alt="" width="38" height="38" loading="lazy" /></span><b>XP</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/sicoob.png" alt="" width="38" height="38" loading="lazy" /></span><b>Sicoob</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/pan.png" alt="" width="38" height="38" loading="lazy" /></span><b>Banco Pan</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/safra.png" alt="" width="38" height="38" loading="lazy" /></span><b>Safra</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/banrisul.png" alt="" width="38" height="38" loading="lazy" /></span><b>Banrisul</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/digio.png" alt="" width="38" height="38" loading="lazy" /></span><b>Digio</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/brb.png" alt="" width="38" height="38" loading="lazy" /></span><b>BRB</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/agibank.png" alt="" width="38" height="38" loading="lazy" /></span><b>Agibank</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/bmg.png" alt="" width="38" height="38" loading="lazy" /></span><b>Banco BMG</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/porto.png" alt="" width="38" height="38" loading="lazy" /></span><b>Porto Bank</b></li>
+            <li><span class="bank-ico bank-ico--app"><img src="assets/banks/app/nomad.png" alt="" width="38" height="38" loading="lazy" /></span><b>Nomad</b></li>
+            <li><span class="bank-ico bank-ico--other"><svg><use href="#i-card"/></svg></span><b>Outros bancos</b></li>
+          </ul>
+        </div>
       </div>
     </section>
 
@@ -298,6 +315,7 @@
     <section class="sec" id="comparar">
       <div class="sec-in">
         <div class="intro reveal">
+          <p class="eyebrow">Por que o Compasso</p>
           <h2 class="h2" data-split>As outras opções foram feitas para quem <em>já sabe.</em></h2>
           <p class="lead">Planilha pede disciplina de contador. O app do banco só mostra o que já foi gasto. O caderninho some na gaveta. Faltava algo que organizasse e ensinasse ao mesmo tempo.</p>
         </div>
@@ -323,33 +341,37 @@
             <li class="is-us"><header><img src="assets/compasso-logo.png" alt="" /><b>Compasso</b><em>Organiza e ensina</em></header><dl><div><dt>Para começar</dt><dd class="yes"><svg><use href="#i-check"/></svg>5 minutos</dd></div><div><dt>Quanto vai sobrar</dt><dd class="yes"><svg><use href="#i-check"/></svg>Saldo projetado</dd></div><div><dt>Fatura do cartão</dt><dd class="yes"><svg><use href="#i-check"/></svg>Lida a partir do PDF</dd></div><div><dt>Ensina o porquê</dt><dd class="yes"><svg><use href="#i-check"/></svg>Trilhas em vídeo</dd></div></dl></li>
           </ul>
         </div>
-        <div class="sx-cta reveal"><a href="#precos" class="btn btn--primary">Quero organizar meu dinheiro<svg><use href="#i-arrow"/></svg></a><p class="sx-note">Comece grátis · cancele quando quiser</p></div>
       </div>
     </section>
 
     <!-- ===================== ANTES × DEPOIS ===================== -->
     <section class="sec">
       <div class="sec-in">
-        <div class="intro reveal"><h2 class="h2" data-split>Sem método, o mês acaba <em>antes do salário.</em></h2></div>
+        <div class="intro reveal">
+          <p class="eyebrow">Antes e depois</p>
+          <h2 class="h2" data-split>Sem método, o mês acaba <em>antes do salário.</em></h2>
+        </div>
         <div class="pair">
           <article class="pair-card pair-card--before reveal">
+            <span class="pair-tag">Antes</span>
             <h3>Contas soltas, na cabeça</h3>
             <p>O salário cai, as contas vão saindo de lugares diferentes e, lá pelo dia 20, vem a pergunta de sempre: para onde foi o dinheiro?</p>
             <div class="chaos" aria-hidden="true">
               <span class="chaos-pay">Salário <b>R$ 6.200</b></span>
               <span class="bub" style="--x:8%;--y:22%;--d:0s">Aluguel</span>
               <span class="bub" style="--x:62%;--y:12%;--d:-1.2s">Cartão ?</span>
-              <span class="bub" style="--x:30%;--y:58%;--d:-2.1s">Delivery</span>
+              <span class="bub" style="--x:30%;--y:62%;--d:-2.1s">Delivery</span>
               <span class="bub" style="--x:70%;--y:52%;--d:-.6s">Luz</span>
-              <span class="bub" style="--x:46%;--y:30%;--d:-3s">Parcela 3/10</span>
-              <span class="bub" style="--x:12%;--y:76%;--d:-1.7s">Assinaturas</span>
-              <span class="bub bub--q" style="--x:82%;--y:78%;--d:-2.6s">???</span>
+              <span class="bub" style="--x:46%;--y:28%;--d:-3s">Parcela 3/10</span>
+              <span class="bub" style="--x:10%;--y:78%;--d:-1.7s">Assinaturas</span>
+              <span class="bub bub--q" style="--x:80%;--y:78%;--d:-2.6s">???</span>
               <span class="chaos-end">Dia 22 · <b>− R$ 380</b></span>
             </div>
           </article>
           <article class="pair-card pair-card--after reveal">
+            <span class="pair-tag pair-tag--ok">Com o Compasso</span>
             <h3>Cada conta no seu lugar</h3>
-            <p>Tudo o que entra e sai do mês num só lugar, com vencimento e valor. Você sabe hoje quanto vai sobrar no dia 30, e a tartaruga avisa se o mês apertar.</p>
+            <p>Tudo o que entra e sai do mês num só lugar, com vencimento e valor. Você sabe hoje quanto vai sobrar no dia 30, e o Compasso avisa se o mês apertar.</p>
             <div class="order" aria-hidden="true">
               <div class="order-in"><span>Entrou</span><b>R$ 6.200</b></div>
               <div class="order-list">
@@ -359,7 +381,7 @@
                 <span style="--i:3"><i></i>Mercado<b>614</b></span>
                 <span style="--i:4"><i></i>Reserva<b>300</b></span>
               </div>
-              <div class="order-out"><span>Sobra no dia 30</span><b><span class="cur">R$</span>1.620</b></div>
+              <div class="order-out"><span>Sobra no dia 30</span><b>R$ 1.620</b></div>
             </div>
           </article>
         </div>
@@ -370,24 +392,32 @@
     <section class="sec" id="como-funciona">
       <div class="sec-in">
         <div class="intro reveal">
-          <p class="kicker">Como funciona</p>
+          <p class="eyebrow">Como funciona</p>
           <h2 class="h2" data-split>Tudo o que o seu mês precisa, <em>num só lugar.</em></h2>
           <p class="lead">Você cadastra uma vez. O Compasso repete o que é recorrente, lê as faturas e mostra, todo dia, o caminho até o fim do mês.</p>
         </div>
         <div class="feat-grid">
-          <article class="feat reveal" data-spot>
+          <article class="feat feat--wide reveal" data-spot>
+            <div class="feat-text">
+              <span class="feat-n">01</span>
+              <h3>Visão do mês</h3>
+              <p>Receitas, despesas e recorrências num quadro só. O saldo projetado diz quanto vai sobrar, ou faltar, no fim do mês.</p>
+            </div>
             <div class="feat-view">
               <div class="fv-month">
-                <div class="fv-row"><span>Receita do mês</span><b><span class="cur">R$</span>6.200</b></div>
-                <div class="fv-stack"><i style="--w:31%" title="Aluguel"></i><i style="--w:21%"></i><i style="--w:12%"></i><i style="--w:7%"></i><em style="--w:29%"></em></div>
+                <div class="fv-row"><span>Receita do mês</span><b>R$ 6.200</b></div>
+                <div class="fv-stack"><i style="--w:31%"></i><i style="--w:21%"></i><i style="--w:12%"></i><i style="--w:7%"></i><em style="--w:29%"></em></div>
                 <div class="fv-legend"><span><i></i>Despesas R$ 4.380</span><span><i class="lt"></i>Sobra R$ 1.820</span></div>
                 <div class="fv-chip"><svg><use href="#i-repeat"/></svg>Aluguel, internet e academia já entram no próximo mês</div>
               </div>
             </div>
-            <h3>Visão do mês</h3>
-            <p>Receitas, despesas e recorrências num quadro só. O saldo projetado diz quanto vai sobrar, ou faltar, no fim do mês.</p>
           </article>
           <article class="feat reveal" data-spot>
+            <div class="feat-text">
+              <span class="feat-n">02</span>
+              <h3>Faturas sem digitação</h3>
+              <p>Arraste o PDF da fatura. O Compasso separa lançamentos, parcelas e categorias, e confere se o total bate.</p>
+            </div>
             <div class="feat-view">
               <div class="fv-inv">
                 <span class="fv-pdf"><svg><use href="#i-file"/></svg>fatura-novembro.pdf<em>2 páginas</em></span>
@@ -399,10 +429,13 @@
                 </ul>
               </div>
             </div>
-            <h3>Faturas sem digitação</h3>
-            <p>Arraste o PDF da fatura. O Compasso separa lançamentos, parcelas e categorias, e confere se o total bate.</p>
           </article>
           <article class="feat reveal" data-spot>
+            <div class="feat-text">
+              <span class="feat-n">03</span>
+              <h3>Reserva de emergência</h3>
+              <p>O Compasso calcula seu custo essencial a partir das contas recorrentes e mostra quantos meses você já tem protegidos.</p>
+            </div>
             <div class="feat-view">
               <div class="fv-reserve">
                 <div class="fv-r-head"><b>2,4</b><span>de 6 meses<br />protegidos</span></div>
@@ -410,18 +443,19 @@
                 <div class="fv-r-cards"><span>Comece com 1 mês de custos essenciais.</span><span>Guarde no dia em que o dinheiro entra.</span><span>Liquidez antes de rendimento.</span></div>
               </div>
             </div>
-            <h3>Reserva de emergência</h3>
-            <p>O Compasso calcula seu custo essencial a partir das contas recorrentes e mostra quantos meses você já tem protegidos.</p>
           </article>
-          <article class="feat reveal" data-spot>
+          <article class="feat feat--wide reveal" data-spot>
+            <div class="feat-text">
+              <span class="feat-n">04</span>
+              <h3>Lembretes e calendário</h3>
+              <p>Vencimentos do mês num calendário, com alerta do que está perto ou atrasado. Exporte para a agenda do celular.</p>
+            </div>
             <div class="feat-view">
               <div class="fv-cal">
                 <div class="fv-cal-head"><b>Novembro</b><span><svg><use href="#i-bell"/></svg>aviso 1 dia antes</span></div>
                 <div class="fv-cal-grid" data-cal></div>
               </div>
             </div>
-            <h3>Lembretes e calendário</h3>
-            <p>Vencimentos do mês num calendário, com alerta do que está perto ou atrasado. Exporte para a agenda do celular.</p>
           </article>
         </div>
         <ul class="chips reveal">
@@ -431,38 +465,57 @@
           <li><svg><use href="#i-moon"/></svg>Modo escuro</li>
           <li><svg><use href="#i-lock"/></svg>Nenhuma senha de banco</li>
         </ul>
-        <div class="sx-cta reveal"><a href="#precos" class="btn btn--primary">Quero organizar meu dinheiro<svg><use href="#i-arrow"/></svg></a><p class="sx-note">Comece grátis · pronto em 5 minutos</p></div>
       </div>
     </section>
 
-    <!-- ===================== TARTARUGA ===================== -->
-    <section class="sec" id="tartaruga">
-      <div class="sec-in turtle-sec">
-        <div class="turtle-copy reveal">
-          <p class="kicker">A tartaruga</p>
-          <h2 class="h2 h2--left" data-split>Ela sente o seu mês <em>antes de você.</em></h2>
-          <p class="lead lead--left">O ritmo e o humor da tartaruga mostram a folga do orçamento. Sem gráfico difícil: dá para entender num olhar, até quando você abre o app com pressa.</p>
+    <!-- ===================== SALDO PROJETADO (simulação) ===================== -->
+    <section class="sec sec--dark" id="termometro">
+      <div class="aurora aurora--soft" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="sec-in sim">
+        <div class="sim-copy reveal">
+          <p class="eyebrow eyebrow--dark">Saldo projetado</p>
+          <h2 class="h2 h2--left" data-split>Saiba hoje como o mês <em>vai terminar.</em></h2>
+          <p class="lead lead--left">O saldo projetado soma tudo o que ainda vai entrar e sair. Se o mês apertar, o Compasso avisa antes, enquanto ainda dá tempo de ajustar.</p>
           <ul class="moods">
             <li data-mood-li="calm"><span class="mood-dot"></span><b>Calma</b>Sobra mais de 15% da receita.</li>
-            <li data-mood-li="alert"><span class="mood-dot"></span><b>Atenta</b>O mês está apertado. Hora de rever os gastos flexíveis.</li>
-            <li data-mood-li="stress"><span class="mood-dot"></span><b>Aflita</b>As despesas passaram da receita.</li>
+            <li data-mood-li="alert"><span class="mood-dot"></span><b>Atenção</b>O mês está apertado. Reveja os gastos flexíveis.</li>
+            <li data-mood-li="stress"><span class="mood-dot"></span><b>Alerta</b>As despesas passaram da receita.</li>
           </ul>
-          <p class="turtle-hint"><svg><use href="#i-arrow"/></svg>Arraste o controle e veja a tartaruga reagir.</p>
+          <p class="sim-hint"><svg><use href="#i-arrow"/></svg>Arraste o controle e veja a projeção mudar.</p>
         </div>
-        <article class="pond-card reveal" data-pond>
-          <header class="pond-head"><span><b>Seu mês</b><em>simulação</em></span><span class="pond-income">Receita <b>R$ 6.200</b></span></header>
-          <div class="pond" data-pond-water>
-            <canvas class="px-turtle pond-turtle" data-scale="7" data-mood="calm" data-pond-turtle></canvas>
-            <span class="pond-shadow"></span>
-            <span class="pond-status" data-pond-status><i></i>Calma</span>
+        <article class="sim-card lg lg--dark reveal" data-sim>
+          <header class="sim-head"><span><b>Novembro</b><em>simulação</em></span><span>Receita <b>R$ 6.200</b></span></header>
+          <div class="sim-top">
+            <div class="gauge" data-gauge>
+              <svg viewBox="0 0 220 124" aria-hidden="true">
+                <defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#e5675a"/><stop offset=".45" stop-color="#e6b85c"/><stop offset="1" stop-color="#b4cdf5"/></linearGradient></defs>
+                <path class="g-track" d="M 16 112 A 94 94 0 0 1 204 112" pathLength="100" />
+                <path class="g-fill" d="M 16 112 A 94 94 0 0 1 204 112" pathLength="100" />
+              </svg>
+              <div class="gauge-read">
+                <small>Saldo projetado</small>
+                <b data-balance-out>R$ 1.820</b>
+                <span class="mood-pill" data-mood-pill><i></i>Calma</span>
+              </div>
+            </div>
           </div>
-          <label class="pond-label" for="spend">Despesas do mês <b data-spend-out>R$ 4.380</b></label>
+          <div class="sim-chart">
+            <svg viewBox="0 0 300 100" preserveAspectRatio="none" aria-hidden="true">
+              <defs><linearGradient id="sa" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#b4cdf5" stop-opacity=".35"/><stop offset="1" stop-color="#b4cdf5" stop-opacity="0"/></linearGradient></defs>
+              <line class="sc-zero" x1="0" x2="300" y1="0" y2="0" data-sc-zero />
+              <path class="sc-area" data-sc-area />
+              <path class="sc-line" data-sc-line />
+              <circle class="sc-dot" r="3.5" data-sc-dot />
+            </svg>
+            <div class="sim-axis"><span>dia 1</span><span>dia 15</span><span>dia 30</span></div>
+          </div>
+          <label class="sim-label" for="spend">Despesas do mês <b data-spend-out>R$ 4.380</b></label>
           <input id="spend" class="range" type="range" min="2400" max="7400" step="20" value="4380" data-spend />
-          <dl class="pond-facts">
-            <div><dt>Saldo projetado</dt><dd data-balance-out>R$ 1.820</dd></div>
+          <dl class="sim-facts">
             <div><dt>Folga</dt><dd data-slack-out>29%</dd></div>
+            <div><dt>Sugestão para a reserva</dt><dd data-save-out>R$ 730</dd></div>
           </dl>
-          <p class="pond-msg" data-pond-msg>Mês tranquilo. Que tal mandar parte da sobra para a reserva?</p>
+          <p class="sim-msg" data-sim-msg>Mês tranquilo. Que tal mandar parte da sobra para a reserva?</p>
         </article>
       </div>
     </section>
@@ -471,9 +524,9 @@
     <section class="sec" id="faturas">
       <div class="sec-in">
         <div class="intro reveal">
-          <p class="kicker">Faturas sem digitação</p>
+          <p class="eyebrow">Faturas sem digitação</p>
           <h2 class="h2" data-split>Você arrasta a fatura. <em>O Compasso confere.</em></h2>
-          <p class="lead">Antes de qualquer leitura, CPF, nome, endereço e número do cartão são escondidos. O PDF não sai do seu computador.</p>
+          <p class="lead">O PDF não sai do seu computador. Se você ativar a leitura com IA, CPF, nome, endereço e número do cartão são removidos antes de o texto seguir, criptografado, para leitura.</p>
         </div>
         <div class="imp reveal" data-imp>
           <div class="imp-win">
@@ -526,7 +579,6 @@
             <li>Entra no seu mês</li>
           </ol>
         </div>
-        <div class="sx-cta reveal"><a href="#precos" class="btn btn--primary">Quero organizar meu dinheiro<svg><use href="#i-arrow"/></svg></a><p class="sx-note">Nubank, Itaú, Bradesco e outros bancos</p></div>
       </div>
     </section>
 
@@ -534,55 +586,54 @@
     <section class="sec" id="academia">
       <div class="sec-in">
         <div class="intro reveal">
-          <p class="kicker">Compasso Academy <span class="tag-pro">PRO</span></p>
+          <p class="eyebrow">Compasso Academy <span class="tag-pro">PRO</span></p>
           <h2 class="h2" data-split>Aprenda enquanto <em>organiza.</em></h2>
           <p class="lead">Videoaulas curtas, em linguagem simples, do primeiro mês organizado aos primeiros investimentos. Uma trilha para seguir no seu ritmo.</p>
         </div>
-        <div class="trail" data-trail>
-          <svg class="trail-path" aria-hidden="true"><path class="trail-base" /><path class="trail-done" /></svg>
-          <canvas class="px-turtle trail-turtle" data-scale="3" data-trail-turtle></canvas>
-          <article class="course" data-course><span class="course-n">01</span><span class="lvl">Iniciante</span><h3>Primeiros passos com o Compasso</h3><p>Monte seu primeiro mês e entenda o saldo projetado.</p><ul><li>Como funciona o mês no Compasso</li><li>Cadastrando receitas e despesas</li><li>Recorrências sem retrabalho</li><li>Marcando pagamentos e lendo a tartaruga</li></ul><footer><svg><use href="#i-play"/></svg>4 aulas · 26 min</footer></article>
-          <article class="course" data-course><span class="course-n">02</span><span class="lvl">Iniciante</span><h3>Orçamento que cabe na vida real</h3><p>Categorias, margem de segurança e gastos flexíveis.</p><ul><li>Essencial, importante e flexível</li><li>Revisão semanal em 10 minutos</li><li>Previsto × realizado</li></ul><footer><svg><use href="#i-play"/></svg>3 aulas · 24 min</footer></article>
-          <article class="course" data-course><span class="course-n">03</span><span class="lvl">Intermediário</span><h3>Reserva de emergência</h3><p>Quanto guardar, onde manter e como construir no seu ritmo.</p><ul><li>Qual o tamanho da sua reserva</li><li>Liquidez, risco e prazos de resgate</li><li>Aportes pequenos e constantes</li></ul><footer><svg><use href="#i-play"/></svg>3 aulas · 28 min</footer></article>
-          <article class="course" data-course><span class="course-n">04</span><span class="lvl">Intermediário</span><h3>Cartões e faturas sem susto</h3><p>Fechamento, parcelas e como evitar contar duas vezes.</p><ul><li>Ciclo de fechamento e vencimento</li><li>Parcelamentos e o orçamento futuro</li><li>Importando e conferindo a fatura</li></ul><footer><svg><use href="#i-play"/></svg>3 aulas · 24 min</footer></article>
-          <article class="course" data-course><span class="course-n">05</span><span class="lvl">Intermediário</span><h3>Saindo das dívidas</h3><p>Mapear, priorizar e negociar com método.</p><ul><li>Mapeando tudo o que você deve</li><li>Bola de neve ou avalanche</li><li>Como negociar</li></ul><footer><svg><use href="#i-play"/></svg>3 aulas · 28 min</footer></article>
-          <article class="course" data-course><span class="course-n">06</span><span class="lvl">Avançado</span><h3>Do orçamento aos investimentos</h3><p>Conceitos para decidir com calma depois de organizar a base.</p><ul><li>Perfil, prazo e objetivo</li><li>Renda fixa em linguagem simples</li><li>Diversificação e erros comuns</li></ul><footer><svg><use href="#i-play"/></svg>3 aulas · 35 min</footer></article>
+        <div class="acad" data-acad>
+          <div class="acad-rail" aria-hidden="true"><i data-acad-fill></i></div>
+          <div class="courses">
+            <article class="course reveal"><span class="course-n">01</span><span class="lvl">Iniciante</span><h3>Primeiros passos com o Compasso</h3><p>Monte seu primeiro mês e entenda o saldo projetado.</p><ul><li>Como funciona o mês no Compasso</li><li>Cadastrando receitas e despesas</li><li>Recorrências sem retrabalho</li><li>Marcando pagamentos</li></ul><footer><svg><use href="#i-play"/></svg>4 aulas · 26 min</footer></article>
+            <article class="course reveal"><span class="course-n">02</span><span class="lvl">Iniciante</span><h3>Orçamento que cabe na vida real</h3><p>Categorias, margem de segurança e gastos flexíveis.</p><ul><li>Essencial, importante e flexível</li><li>Revisão semanal em 10 minutos</li><li>Previsto × realizado</li></ul><footer><svg><use href="#i-play"/></svg>3 aulas · 24 min</footer></article>
+            <article class="course reveal"><span class="course-n">03</span><span class="lvl lvl--mid">Intermediário</span><h3>Reserva de emergência</h3><p>Quanto guardar, onde manter e como construir no seu ritmo.</p><ul><li>Qual o tamanho da sua reserva</li><li>Liquidez, risco e prazos de resgate</li><li>Aportes pequenos e constantes</li></ul><footer><svg><use href="#i-play"/></svg>3 aulas · 28 min</footer></article>
+            <article class="course reveal"><span class="course-n">04</span><span class="lvl lvl--mid">Intermediário</span><h3>Cartões e faturas sem susto</h3><p>Fechamento, parcelas e como evitar contar duas vezes.</p><ul><li>Ciclo de fechamento e vencimento</li><li>Parcelamentos e o orçamento futuro</li><li>Importando e conferindo a fatura</li></ul><footer><svg><use href="#i-play"/></svg>3 aulas · 24 min</footer></article>
+            <article class="course reveal"><span class="course-n">05</span><span class="lvl lvl--mid">Intermediário</span><h3>Saindo das dívidas</h3><p>Mapear, priorizar e negociar com método.</p><ul><li>Mapeando tudo o que você deve</li><li>Bola de neve ou avalanche</li><li>Como negociar</li></ul><footer><svg><use href="#i-play"/></svg>3 aulas · 28 min</footer></article>
+            <article class="course reveal"><span class="course-n">06</span><span class="lvl lvl--adv">Avançado</span><h3>Do orçamento aos investimentos</h3><p>Conceitos para decidir com calma depois de organizar a base.</p><ul><li>Perfil, prazo e objetivo</li><li>Renda fixa em linguagem simples</li><li>Diversificação e erros comuns</li></ul><footer><svg><use href="#i-play"/></svg>3 aulas · 35 min</footer></article>
+          </div>
         </div>
-        <p class="trail-sum reveal"><b>19 aulas</b> · <b>2h45</b> no total · do básico aos investimentos</p>
+        <p class="acad-sum reveal"><b>19 aulas</b> · <b>2h45</b> no total · do básico aos investimentos</p>
       </div>
     </section>
 
-    <!-- ===================== PALAVRA GIGANTE ===================== -->
-    <section class="giant" aria-hidden="true">
-      <p class="giant-word"><span style="--i:0">c</span><span style="--i:1">o</span><span style="--i:2">m</span><span style="--i:3">p</span><span style="--i:4">a</span><span style="--i:5">s</span><span style="--i:6">s</span><span style="--i:7">o</span></p>
-    </section>
-
     <!-- ===================== PREÇOS ===================== -->
-    <section class="sec" id="precos">
+    <section class="sec sec--dark" id="precos">
+      <div class="aurora aurora--soft aurora--low" aria-hidden="true"><i></i><i></i><i></i></div>
       <div class="sec-in">
         <div class="intro reveal">
+          <p class="eyebrow eyebrow--dark">Planos</p>
           <h2 class="h2" data-split>Comece grátis. <em>Aprenda no Pro.</em></h2>
           <p class="lead">O essencial para organizar o mês é grátis, para sempre. O Pro libera as aulas e as contas da casa a dois.</p>
         </div>
-        <div class="period reveal" role="group" aria-label="Período de cobrança">
+        <div class="period lg lg--dark reveal" role="group" aria-label="Período de cobrança">
+          <span class="period-thumb" aria-hidden="true"></span>
           <button type="button" class="is-on" data-period="m">Mensal</button>
           <button type="button" data-period="y">Anual<em>2 meses grátis</em></button>
         </div>
         <ul class="plans">
-          <li class="plan reveal">
+          <li class="plan lg lg--dark reveal">
             <div class="plan-head">
               <b>Essencial</b><em>Para organizar o mês</em>
               <p class="price"><strong>R$ 0</strong><span>para sempre</span></p>
               <p class="price-note">Sem cartão de crédito.</p>
-              <a href="#" class="btn btn--ghost-dark btn--block" data-checkout="free">Baixar grátis<svg><use href="#i-download"/></svg></a>
+              <a href="#" class="btn btn--glass lg lg--dark btn--block" data-checkout="free">Baixar grátis<svg><use href="#i-download"/></svg></a>
             </div>
             <ul class="plan-list">
               <li><svg><use href="#i-check"/></svg>Visão do mês e saldo projetado</li>
               <li><svg><use href="#i-check"/></svg>Despesas, receitas e recorrências</li>
               <li><svg><use href="#i-check"/></svg>Leitura de faturas em PDF e CSV</li>
               <li><svg><use href="#i-check"/></svg>Reserva de emergência guiada</li>
-              <li><svg><use href="#i-check"/></svg>A tartaruga do orçamento</li>
-              <li><svg><use href="#i-check"/></svg>Calendário, alertas e backups diários</li>
+              <li><svg><use href="#i-check"/></svg>Alertas de saldo e de vencimento</li>
+              <li><svg><use href="#i-check"/></svg>Calendário e backups diários</li>
             </ul>
           </li>
           <li class="plan plan--pro reveal">
@@ -591,10 +642,7 @@
               <b>Pro</b><em>Para aprender e ir além</em>
               <p class="price"><s data-price-old hidden>R$ 19,90</s><strong data-price>R$ 19,90</strong><span>/mês</span></p>
               <p class="price-note" data-price-note>Cobrado mês a mês. Cancele quando quiser.</p>
-              <div class="plan-go">
-                <span class="plan-peek"><canvas class="px-turtle" data-scale="2" data-peek></canvas></span>
-                <a href="#" class="btn btn--dark btn--block" data-checkout="pro">Assinar o Pro<svg><use href="#i-arrow"/></svg></a>
-              </div>
+              <a href="#" class="btn btn--dark btn--block" data-checkout="pro">Assinar o Pro<svg><use href="#i-arrow"/></svg></a>
             </div>
             <ul class="plan-list">
               <li><svg><use href="#i-check"/></svg>Tudo do Essencial</li>
@@ -615,12 +663,16 @@
 
     <!-- ===================== FAQ ===================== -->
     <section class="sec" id="duvidas">
-      <div class="sec-in sec-in--narrow">
-        <div class="intro reveal"><h2 class="h2" data-split>Perguntas <em>frequentes</em></h2></div>
+      <div class="sec-in faq-wrap">
+        <div class="faq-intro reveal">
+          <p class="eyebrow">Dúvidas</p>
+          <h2 class="h2 h2--left" data-split>Perguntas <em>frequentes</em></h2>
+          <p class="lead lead--left">Não achou o que procurava? Escreva para a gente, respondemos em até um dia útil.</p>
+        </div>
         <div class="faq">
           <details class="reveal"><summary>Preciso entender de finanças para usar?<svg><use href="#i-down"/></svg></summary><div><p>Não. O Compasso foi feito para quem está começando. Você cadastra o que entra e o que sai, e ele mostra quanto vai sobrar. As palavras são simples e cada quadro tem uma ajuda curta no “?”.</p></div></details>
           <details class="reveal"><summary>O Compasso acessa minha conta bancária?<svg><use href="#i-down"/></svg></summary><div><p>Não. Você nunca informa senha de banco. As contas são cadastradas por você e as faturas entram pelo PDF ou CSV que você mesmo baixa do app do banco.</p></div></details>
-          <details class="reveal"><summary>Onde ficam os meus dados?<svg><use href="#i-down"/></svg></summary><div><p>No seu computador. O Compasso guarda tudo localmente e faz uma cópia de segurança por dia. Você pode exportar um backup completo quando quiser.</p></div></details>
+          <details class="reveal"><summary>Onde ficam os meus dados?<svg><use href="#i-down"/></svg></summary><div><p>No seu computador, criptografados com AES-256. O Compasso guarda tudo localmente e faz uma cópia de segurança por dia, também criptografada. Você pode exportar um backup completo quando quiser. Detalhes na <a href="privacidade.html">política de privacidade</a>.</p></div></details>
           <details class="reveal"><summary>Como funciona a leitura da fatura?<svg><use href="#i-down"/></svg></summary><div><p>Você escolhe o PDF ou CSV da fatura. Antes da leitura, CPF, nome, endereço, telefone e números de cartão e de conta são removidos. Saem só banco, vencimento, total e lançamentos, e o PDF nunca é enviado. Depois você confere tudo antes de salvar.</p></div></details>
           <details class="reveal"><summary>Quais bancos funcionam?<svg><use href="#i-down"/></svg></summary><div><p>Nubank e Bradesco foram testados com faturas reais, o Itaú tem leitura própria e os outros bancos usam uma leitura geral. Se o PDF não tiver texto (uma foto escaneada, por exemplo), você pode usar o modelo CSV.</p></div></details>
           <details class="reveal"><summary>Funciona em quais aparelhos?<svg><use href="#i-down"/></svg></summary><div><p>Hoje no Windows, como aplicativo instalado, com atualizações automáticas. A versão para celular está em desenvolvimento.</p></div></details>
@@ -629,27 +681,42 @@
       </div>
     </section>
 
-    <!-- ===================== CTA FINAL ===================== -->
-    <section class="final">
+  </main>
+
+  <!-- ===================== ALTO MAR: CTA final e rodapé =====================
+       A página "mergulha": ondas na superfície, e embaixo uma tartaruga em 3D
+       nadando entre raios de luz, cardume e partículas. O azul vai até o rodapé. -->
+  <div class="ocean" data-ocean>
+    <div class="ocean-surface" aria-hidden="true"><div class="ocean-waves"><svg viewBox="0 0 2880 90" preserveAspectRatio="none"><path class="w-back" d="M0 46 C 120 26, 240 26, 360 46 S 600 66, 720 46 S 960 26, 1080 46 S 1320 66, 1440 46 S 1680 26, 1800 46 S 2040 66, 2160 46 S 2400 26, 2520 46 S 2760 66, 2880 46 V 90 H 0 Z"/><path class="w-front" d="M0 58 C 240 38, 480 38, 720 58 S 1200 78, 1440 58 S 1920 38, 2160 58 S 2640 78, 2880 58 V 90 H 0 Z"/></svg></div></div>
+    <section class="final" id="comecar">
+      <div class="ocean-rays" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <canvas class="ocean-gl" data-ocean-gl aria-hidden="true"></canvas>
       <div class="final-in reveal">
-        <p class="kicker kicker--glass"><svg><use href="#i-moon"/></svg>Como as tartarugas que seguem a lua até o mar</p>
+        <p class="badge lg lg--dark"><span class="badge-dot"></span>Comece hoje, de graça</p>
         <h2 class="h2 h2--xl" data-split>Seu próximo mês pode <em>fechar no azul.</em></h2>
         <p class="lead">Monte seu primeiro mês hoje. Em cinco minutos você já sabe quanto vai sobrar no dia 30.</p>
-        <div class="hero-cta"><a href="#precos" class="btn btn--primary btn--glow">Começar grátis<svg><use href="#i-arrow"/></svg></a><a href="#precos" class="btn btn--ghost">Ver os planos</a></div>
+        <div class="hero-cta"><a href="#precos" class="btn btn--primary">Começar grátis<svg><use href="#i-arrow"/></svg></a><a href="#precos" class="btn btn--glass lg lg--dark">Ver os planos</a></div>
+        <p class="final-note">Devagar e sempre. <em>A tartaruga chega lá.</em></p>
       </div>
-      <div class="hatch" aria-hidden="true" data-hatch></div>
     </section>
-  </main>
 
   <footer class="foot">
     <div class="foot-in">
       <div class="foot-top">
-        <a class="logo" href="#topo"><span class="logo-tile"><img src="assets/compasso-logo.png" alt="" width="26" height="16" /></span><span class="logo-word">Compasso</span></a>
-        <nav class="foot-links"><a href="#como-funciona">Como funciona</a><a href="#academia">Academia</a><a href="#precos">Preços</a><a href="#duvidas">Dúvidas</a><a href="fonte.html">A fonte Casco</a><a href="#">Termos de uso</a><a href="#">Privacidade</a></nav>
+        <div class="foot-brand">
+          <a class="logo" href="#topo"><span class="logo-tile"><img src="assets/compasso-logo.png" alt="" width="24" height="15" /></span><span class="logo-word">Compasso</span></a>
+          <p>Organização financeira com rumo, para quem quer aprender a cuidar do próprio dinheiro.</p>
+        </div>
+        <nav class="foot-cols" aria-label="Rodapé">
+          <div><b>Produto</b><a href="#como-funciona">Como funciona</a><a href="#termometro">Saldo projetado</a><a href="#faturas">Faturas</a><a href="#precos">Preços</a></div>
+          <div><b>Aprender</b><a href="#academia">Academia</a><a href="#duvidas">Dúvidas</a></div>
+          <div><b>Legal</b><a href="#">Termos de uso</a><a href="privacidade.html">Privacidade</a></div>
+        </nav>
       </div>
-      <p class="foot-copy">© 2026 Compasso · Organização financeira com rumo.</p>
+      <div class="foot-bottom"><span>© 2026 Compasso. Todos os direitos reservados.</span><span><svg><use href="#i-lock"/></svg>Seus dados ficam no seu computador, criptografados</span></div>
     </div>
   </footer>
+  </div>
 
   <script src="main.js" defer></script>
 </body>
