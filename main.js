@@ -110,6 +110,24 @@
     mac.style.setProperty('--s', (macFit.clientWidth / 1180).toFixed(4));
   }
 
+  /* Teclado do MacBook (larguras em unidades de tecla; cada linha soma 15) */
+  const keys = $('[data-keys]');
+  if (keys) {
+    const one = str => str.split(' ').map(l => [1, l]);
+    const rows = [
+      [[1.5, 'esc', 'm'], ...Array(12).fill([1, '']), [1.5, '', 'tid']],
+      [...one("' 1 2 3 4 5 6 7 8 9 0 - ="), [2, 'delete', 'm r']],
+      [[1.5, 'tab', 'm'], ...one('Q W E R T Y U I O P ´ ['), [1.5, '', 'ret']],
+      [[1.8, 'caps lock', 'm'], ...one('A S D F G H J K L Ç ~'), [2.2, 'return', 'm r']],
+      [[2.35, 'shift', 'm'], ...one('Z X C V B N M , . ;'), [2.65, 'shift', 'm r']],
+      [[1, 'fn', 'm'], [1, 'control', 'm s'], [1, 'option', 'm s'], [1.25, 'command', 'm s'], [5.5, ''], [1.25, 'command', 'm s'], [1, 'option', 'm s'], 'arrows']
+    ];
+    const key = ([w, l, c = '']) => `<i class="${c}" style="flex:${w}">${l ? `<b>${l}</b>` : ''}</i>`;
+    keys.innerHTML = rows.map((r, i) => `<div class="kr${i ? '' : ' kr--fn'}">` + r.map(k => k === 'arrows'
+      ? '<span class="k-arrows" style="flex:3"><i><b>◀</b></i><span><i><b>▲</b></i><i><b>▼</b></i></span><i><b>▶</b></i></span>'
+      : key(k)).join('') + '</div>').join('');
+  }
+
   function countUp(el, delay = 0) {
     const target = parseFloat(el.dataset.count);
     const fmt = el.dataset.fmt;
